@@ -38,8 +38,8 @@ class _LocationScreenState extends State<LocationScreen> {
 
   CameraPosition _setInitialPosition() {
     return const CameraPosition(
-      target: LatLng(31.205753, 29.924526),
-      zoom: 13.151926040649414,
+      target: LatLng(10.01245, 105.73243), // Đại học FPT Cần Thơ
+      zoom: 16.0,
     );
   }
 
@@ -76,13 +76,13 @@ class _LocationScreenState extends State<LocationScreen> {
           if (state.locationUpdateState == BlocState.failure ||
               state.locationUpdateState == BlocState.success) {
             await Future.delayed(const Duration(milliseconds: 500));
-            if(mounted){
+            if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 CustomSnackBar.show(
                   customSnackBarType:
-                  state.locationUpdateState == BlocState.failure
-                      ? CustomSnackBarType.error
-                      : CustomSnackBarType.success,
+                      state.locationUpdateState == BlocState.failure
+                          ? CustomSnackBarType.error
+                          : CustomSnackBarType.success,
                   message: state.locationUpdateMessage,
                   context: context,
                 ),
@@ -164,20 +164,23 @@ class _LocationScreenState extends State<LocationScreen> {
               child: BlocBuilder<MapBloc, MapState>(
                 builder: (context, state) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0).r,
-                    child: Visibility(
-                      visible: state.setMarkerState == BlocState.success,
-                      child: CustomFadeAnimation(
-                        duration: const Duration(milliseconds: 500),
-                        child: PrimaryButton(
-                            buttonTitle: state.userLocation.latitude != 0 ? StringsManager.updateLocationButton :  StringsManager.confirmLocationButton,
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0).r,
+                      child: Visibility(
+                        visible: state.setMarkerState == BlocState.success,
+                        child: CustomFadeAnimation(
+                          duration: const Duration(milliseconds: 500),
+                          child: PrimaryButton(
+                            buttonTitle: state.userLocation.latitude != 0
+                                ? StringsManager.updateLocationButton
+                                : StringsManager.confirmLocationButton,
                             onTap: () {
-                              context.read<MapBloc>().add(const UpdateUserLocationEvent());
+                              context
+                                  .read<MapBloc>()
+                                  .add(const UpdateUserLocationEvent());
                             },
                           ),
-                      ),
-                    )
-                  );
+                        ),
+                      ));
                 },
               ),
             ),

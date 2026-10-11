@@ -5,11 +5,14 @@ import 'package:efashion_flutter/shared/constants/api_constants.dart';
 import 'package:efashion_flutter/shared/error/exception.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:injectable/injectable.dart';
+
 abstract class MapDataSource {
- Future<List<PlaceModel>> getPlacesSuggestions({required String searchQuery});
- Future<PlaceDataModel> getPlaceLatitudeAndLongitude({required String placeId});
- Future<PlaceDataModel> getUserLocationUseCase();
- Future<String> updateUserLocationUseCase({required double latitude, required double longitude});
+  Future<List<PlaceModel>> getPlacesSuggestions({required String searchQuery});
+  Future<PlaceDataModel> getPlaceLatitudeAndLongitude(
+      {required String placeId});
+  Future<PlaceDataModel> getUserLocationUseCase();
+  Future<String> updateUserLocationUseCase(
+      {required double latitude, required double longitude});
 }
 
 @LazySingleton(as: MapDataSource)
@@ -25,54 +28,59 @@ class MapDataSourceImpl extends MapDataSource {
   );
 
   @override
-  Future<List<PlaceModel>> getPlacesSuggestions({required String searchQuery}) async{
-    final response = await _mapApiConsumer.get(ApiConstants.mapPlaceAutoComplete, queryParameters: {
-      'input' : searchQuery,
-      'radius' : 500,
-      'key' : googleMapsKey,
+  Future<List<PlaceModel>> getPlacesSuggestions(
+      {required String searchQuery}) async {
+    final response = await _mapApiConsumer
+        .get(ApiConstants.mapPlaceAutoComplete, queryParameters: {
+      'input': searchQuery,
+      'radius': 500,
+      'key': googleMapsKey,
     });
-    if(response['status'] == GoogleMapsCallStatus.ok.value){
-      return List<PlaceModel>.from((response['predictions'] as List).map((place) => PlaceModel.fromJson(place)));
-    }else{
+    if (response['status'] == GoogleMapsCallStatus.ok.value) {
+      return List<PlaceModel>.from((response['predictions'] as List)
+          .map((place) => PlaceModel.fromJson(place)));
+    } else if (response['status'] == 'ZERO_RESULTS') {
+      return []; // Trả về danh sách rỗng êm ru, không bị throw lỗi
+    } else {
       throw const FetchDataException();
     }
   }
 
   @override
-  Future<PlaceDataModel> getPlaceLatitudeAndLongitude({required String placeId}) async{
-    final response = await _mapApiConsumer.get(ApiConstants.mapPlaceDetails, queryParameters: {
-      'place_id' : placeId,
-      'radius' : 500,
-      'key' : googleMapsKey,
+  Future<PlaceDataModel> getPlaceLatitudeAndLongitude(
+      {required String placeId}) async {
+    final response = await _mapApiConsumer
+        .get(ApiConstants.mapPlaceDetails, queryParameters: {
+      'place_id': placeId,
+      'radius': 500,
+      'key': googleMapsKey,
     });
-    if(response['status'] == GoogleMapsCallStatus.ok.value){
-      return PlaceDataModel.fromJson(response['result']['geometry']['location']);
-    }else{
+    if (response['status'] == GoogleMapsCallStatus.ok.value) {
+      return PlaceDataModel.fromJson(
+          response['result']['geometry']['location']);
+    } else {
       throw const FetchDataException();
     }
   }
 
   @override
-  Future<PlaceDataModel> getUserLocationUseCase() async{
+  Future<PlaceDataModel> getUserLocationUseCase() async {
     final response = await _mainApiConsumer.get(ApiConstants.addressEndPoint);
-    if(response['status'] == ApiCallStatus.success.value){
+    if (response['status'] == ApiCallStatus.success.value) {
       return PlaceDataModel.fromJson(response['data']['location']);
-    }else{
+    } else {
       throw const FetchDataException();
     }
   }
 
   @override
-  Future<String> updateUserLocationUseCase({required double latitude, required double longitude}) async{
+  Future<String> updateUserLocationUseCase(
+      {required double latitude, required double longitude}) async {
     final response = await _mainApiConsumer.post(ApiConstants.addressEndPoint,
-      body: {
-        "latitude" : latitude,
-        "longitude" : longitude
-      }
-    );
-    if(response['status'] == ApiCallStatus.success.value){
+        body: {"latitude": latitude, "longitude": longitude});
+    if (response['status'] == ApiCallStatus.success.value) {
       return 'Success! Your Location Updated.';
-    }else{
+    } else {
       throw const FetchDataException();
     }
   }
