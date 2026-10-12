@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../components/collectionComponent/domain/entities/collection.dart';
+import '../../../../../components/productComponent/domain/entities/brand.dart';
+import '../../../../../components/productComponent/domain/entities/category.dart';
+import '../../../screens/search_screen.dart';
 import '../../../bloc/home_bloc/home_cubit.dart';
 import '../../../../shared/widgets/home_network_image.dart';
 
@@ -11,11 +14,15 @@ class CollectionCarouselComponent extends StatelessWidget {
   const CollectionCarouselComponent({
     required this.collections,
     required this.collectionIndex,
+    required this.categories,
+    required this.brands,
     super.key,
   });
 
   final List<HomeCollection> collections;
   final int collectionIndex;
+  final List<HomeCategory> categories;
+  final List<HomeBrand> brands;
 
   @override
   Widget build(BuildContext context) {
@@ -62,8 +69,13 @@ class CollectionCarouselComponent extends StatelessWidget {
             left: 20,
             top: 36,
             child: IconButton(
-              onPressed: null,
-              tooltip: 'Search is not part of this Home-only project.',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      SearchScreen(categories: categories, brands: brands),
+                ),
+              ),
+              tooltip: 'Search products',
               icon: const Icon(Icons.search_rounded, color: Colors.white),
             ),
           ),

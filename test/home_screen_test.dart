@@ -54,6 +54,27 @@ void main() {
 
     expect(repository.lastCategoryIds, ['category-1']);
   });
+
+  testWidgets('opens Search from the Home collection', (tester) async {
+    await tester.pumpWidget(
+      BlocProvider(
+        create: (_) =>
+            HomeCubit(GetHomeDataUseCase(_FakeHomeRepository()))..loadHome(),
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    await tester.tap(find.byTooltip('Search products'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(AppBar, 'Search'), findsOneWidget);
+    expect(
+      find.text('Enter a product name to start searching.'),
+      findsOneWidget,
+    );
+  });
 }
 
 class _FakeHomeRepository implements HomeRepository {
@@ -99,4 +120,14 @@ class _FakeHomeRepository implements HomeRepository {
       ],
     );
   }
+
+  @override
+  Future<List<HomeProduct>> searchProducts({
+    required String query,
+    required int page,
+    List<String> categoryIds = const [],
+    List<String> brandIds = const [],
+    int? minPrice,
+    int? maxPrice,
+  }) async => const [];
 }

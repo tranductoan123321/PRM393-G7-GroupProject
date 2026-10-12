@@ -64,6 +64,25 @@ class HomeRepositoryImpl implements HomeRepository {
       ],
     );
   }
+
+  @override
+  Future<List<HomeProduct>> searchProducts({
+    required String query,
+    required int page,
+    List<String> categoryIds = const [],
+    List<String> brandIds = const [],
+    int? minPrice,
+    int? maxPrice,
+  }) async => _productsFromJson(
+    await _dataSource.searchProducts(
+      query: query,
+      page: page,
+      categoryIds: categoryIds,
+      brandIds: brandIds,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+    ),
+  );
 }
 
 List<HomeProduct> _productsFromJson(List<Map<String, dynamic>> jsonList) =>

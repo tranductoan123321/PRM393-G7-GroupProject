@@ -41,6 +41,8 @@ class HomeScreen extends StatelessWidget {
           CollectionCarouselComponent(
             collections: data.collections,
             collectionIndex: state.collectionIndex,
+            categories: data.categories,
+            brands: data.brands,
           ),
           const SizedBox(height: 10),
           CategoriesComponent(categories: data.categories, state: state),

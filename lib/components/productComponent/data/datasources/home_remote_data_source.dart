@@ -30,7 +30,27 @@ class HomeRemoteDataSource {
       'categories': ?_categoriesQuery(categoryIds),
     },
   );
+
+  Future<List<Map<String, dynamic>>> searchProducts({
+    required String query,
+    required int page,
+    List<String> categoryIds = const [],
+    List<String> brandIds = const [],
+    int? minPrice,
+    int? maxPrice,
+  }) => _apiClient.getProducts(
+    queryParameters: {
+      'search': query,
+      'page': page,
+      'categories': ?_idsQuery(categoryIds),
+      'brands': ?_idsQuery(brandIds),
+      'min-price': minPrice,
+      'max-price': maxPrice,
+    },
+  );
 }
 
 String? _categoriesQuery(List<String> categoryIds) =>
     categoryIds.isEmpty ? null : categoryIds.join(',');
+
+String? _idsQuery(List<String> ids) => ids.isEmpty ? null : ids.join(',');
