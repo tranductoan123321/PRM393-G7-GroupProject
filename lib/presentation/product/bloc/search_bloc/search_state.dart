@@ -1,42 +1,60 @@
-part of 'search_bloc.dart';
+import '../../../../components/productComponent/domain/entities/product.dart';
 
-class SearchState extends Equatable {
-  final List<Product> searchProducts;
-  final bool hasSearchProductsListReachedMax;
-  final BlocState searchState;
-  final String searchFailMessage;
-  final BlocState loadMoreProductsState;
-  const SearchState({
-    this.searchProducts = const [],
-    this.hasSearchProductsListReachedMax = false,
-    this.searchState = BlocState.initial,
-    this.searchFailMessage = '',
-    this.loadMoreProductsState = BlocState.initial
+enum SearchStatus { initial, loading, success, failure }
+
+class SearchFilters {
+  const SearchFilters({
+    this.categoryIds = const [],
+    this.brandIds = const [],
+    this.minPrice,
+    this.maxPrice,
   });
 
-  @override
-  List<Object?> get props => [
-        searchProducts,
-        hasSearchProductsListReachedMax,
-        searchState,
-        searchFailMessage,
-        loadMoreProductsState,
-      ];
+  final List<String> categoryIds;
+  final List<String> brandIds;
+  final int? minPrice;
+  final int? maxPrice;
+}
+
+class SearchState {
+  const SearchState({
+    this.status = SearchStatus.initial,
+    this.products = const [],
+    this.query = '',
+    this.error,
+    this.filters = const SearchFilters(),
+    this.page = 1,
+    this.hasReachedMax = false,
+    this.isLoadingMore = false,
+  });
+
+  final SearchStatus status;
+  final List<HomeProduct> products;
+  final String query;
+  final String? error;
+  final SearchFilters filters;
+  final int page;
+  final bool hasReachedMax;
+  final bool isLoadingMore;
 
   SearchState copyWith({
-    List<Product>? searchProducts,
-    bool? hasSearchProductsListReachedMax,
-    BlocState? searchState,
-    String? searchFailMessage,
-    BlocState? loadMoreProductsState,
-  }) {
-    return SearchState(
-      searchProducts: searchProducts ?? this.searchProducts,
-      hasSearchProductsListReachedMax:
-          hasSearchProductsListReachedMax ?? this.hasSearchProductsListReachedMax,
-      searchState: searchState ?? this.searchState,
-      searchFailMessage: searchFailMessage ?? this.searchFailMessage,
-      loadMoreProductsState: loadMoreProductsState ?? this.loadMoreProductsState,
-    );
-  }
+    SearchStatus? status,
+    List<HomeProduct>? products,
+    String? query,
+    String? error,
+    bool clearError = false,
+    SearchFilters? filters,
+    int? page,
+    bool? hasReachedMax,
+    bool? isLoadingMore,
+  }) => SearchState(
+    status: status ?? this.status,
+    products: products ?? this.products,
+    query: query ?? this.query,
+    error: clearError ? null : error ?? this.error,
+    filters: filters ?? this.filters,
+    page: page ?? this.page,
+    hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+  );
 }

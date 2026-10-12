@@ -1,139 +1,173 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:efashion_flutter/presentation/product/bloc/collections_cubit/collections_cubit.dart';
-import 'package:efashion_flutter/presentation/product/bloc/home_bloc/home_bloc.dart';
-import 'package:efashion_flutter/presentation/product/components/home/collection/collection_shimmer_loading.dart';
-import 'package:efashion_flutter/core/router/app_router.dart';
-import 'package:efashion_flutter/shared/util/colors_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:efashion_flutter/presentation/product/components/home/collection/animated_indicator.dart';
-import 'package:efashion_flutter/presentation/product/components/home/collection/collection_carousel_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:iconsax/iconsax.dart';
 
-class CollectionCarouselComponent extends StatefulWidget {
-  const CollectionCarouselComponent({super.key});
+import '../../../../../components/collectionComponent/domain/entities/collection.dart';
+import '../../../../../components/productComponent/domain/entities/brand.dart';
+import '../../../../../components/productComponent/domain/entities/category.dart';
+import '../../../screens/search_screen.dart';
+import '../../../bloc/home_bloc/home_cubit.dart';
+import '../../../../shared/widgets/home_network_image.dart';
 
-  @override
-  State<CollectionCarouselComponent> createState() => _CollectionCarouselComponentState();
-}
+const _primary = Color(0xFF00629D);
 
-class _CollectionCarouselComponentState extends State<CollectionCarouselComponent> {
-  ValueNotifier<int> listenableIndicatorIndex = ValueNotifier<int>(0);
+class CollectionCarouselComponent extends StatelessWidget {
+  const CollectionCarouselComponent({
+    required this.collections,
+    required this.collectionIndex,
+    required this.categories,
+    required this.brands,
+    super.key,
+  });
+
+  final List<HomeCollection> collections;
+  final int collectionIndex;
+  final List<HomeCategory> categories;
+  final List<HomeBrand> brands;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CollectionsCubit, CollectionsState>(
-      builder: (context, state) {
-        if (state.collectionsList.isEmpty) {
-          return const CollectionShimmerLoading();
-        } else {
-          return Stack(
-            children: [
-              BlocBuilder<CollectionsCubit, CollectionsState>(
-                buildWhen: (previous, current) => previous.collectionsState != current.collectionsState,
-                builder: (context, state) {
-                  return CarouselSlider.builder(
-                    itemCount: state.collectionsList.length,
-                    itemBuilder: (context, index, realIndex) {
-                      return CarouselCard(
-                        cardImageUrl: state.collectionsList[index].image,
-                        collectionName: state.collectionsList[index].title,
-                        discount: state.collectionsList[index].discount,
-                        onTap: () {
-                          context.pushRoute(
-                            CollectionDetailsRoute(
-                              collectionId: state.collectionsList[index].id,
-                              collectionName:
-                                  state.collectionsList[index].title,
-                              collectionPrice:
-                                  state.collectionsList[index].price,
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    options: CarouselOptions(
-                      height: 320.h,
-                      viewportFraction: 1,
-                      enlargeCenterPage: false,
-                      initialPage: 0,
-                      onPageChanged: (index, reason) {
-                        listenableIndicatorIndex.value = index;
-                      },
-                    ),
-                  );
-                },
+    if (collections.isEmpty) {
+      return const SizedBox(
+        height: 320,
+        child: Center(child: Text('No collections available.')),
+      );
+    }
+    final index = collectionIndex % collections.length;
+    final collection = collections[index];
+    return SizedBox(
+      height: 320,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(30),
+            ),
+            child: HomeNetworkImage(
+              collection.imageUrl,
+              fit: BoxFit.cover,
+              fallbackIcon: Icons.checkroom_outlined,
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(30),
               ),
-              Positioned(
-                left: 20.w,
-                top: 40.h,
-                child: IconButton(
-                  onPressed: () {
-                    final homeBloc = context.read<HomeBloc>();
-                    context.pushRoute(
-                      SearchRoute(
-                        categories: homeBloc.state.categories,
-                        brands: homeBloc.state.brands,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.12),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.62),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 20,
+            top: 36,
+            child: IconButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      SearchScreen(categories: categories, brands: brands),
+                ),
+              ),
+              tooltip: 'Search products',
+              icon: const Icon(Icons.search_rounded, color: Colors.white),
+            ),
+          ),
+          Positioned(
+            right: 20,
+            top: 36,
+            child: IconButton(
+              onPressed: null,
+              tooltip: 'Notifications are not part of this Home-only project.',
+              icon: const Icon(
+                Icons.notifications_none_rounded,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 20,
+            bottom: 80,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${collection.title.toUpperCase()} COLLECTION',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(width: 150, height: 2, color: Colors.white),
+                Text(
+                  '${collection.discount}%OFF',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 46,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Text(
+                  'For Selected collection',
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 10,
+            bottom: 24,
+            child: FilledButton(
+              onPressed: null,
+              style: FilledButton.styleFrom(
+                backgroundColor: _primary,
+                disabledBackgroundColor: _primary,
+                foregroundColor: Colors.white,
+                disabledForegroundColor: Colors.white,
+                minimumSize: const Size(100, 48),
+              ),
+              child: const Text('Shop Now'),
+            ),
+          ),
+          Positioned(
+            left: 10,
+            bottom: 34,
+            child: Row(
+              children: [
+                for (var dot = 0; dot < collections.length; dot++)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: GestureDetector(
+                      onTap: () =>
+                          context.read<HomeCubit>().selectCollection(dot),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: dot == index ? 30 : 10,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(
+                            alpha: dot == index ? 1 : 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                    );
-                  },
-                  icon: Icon(
-                    Iconsax.search_normal_1,
-                    color: Colors.white,
-                    size: 24.sp,
+                    ),
                   ),
-                ),
-              ),
-              Positioned(
-                right: 20.w,
-                top: 40.h,
-                child: IconButton(
-                  onPressed: () {
-                    context.pushRoute(const NotificationsRoute());
-                  },
-                  icon: Icon(
-                    Iconsax.notification,
-                    color: Colors.white,
-                    size: 24.sp,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 10.w,
-                bottom: 25.h,
-                child: BlocBuilder<CollectionsCubit, CollectionsState>(
-                  buildWhen: (previous, current) =>
-                      previous.collectionsList != current.collectionsList,
-                  builder: (context, state) {
-                    return ValueListenableBuilder(
-                      valueListenable: listenableIndicatorIndex,
-                      builder: (context, activeIndex, child) {
-                        return AnimatedIndicator(
-                          dotWidth: 30.w,
-                          dotHeight: 4.h,
-                          currentIndex: activeIndex,
-                          selectedColor: ColorsManager.activeIndicatorColor,
-                          unSelectedColor: ColorsManager.inActiveIndicatorColor,
-                          axisDirection: Axis.horizontal,
-                          dotsCount: state.collectionsList.length,
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        }
-      },
+              ],
+            ),
+          ),
+        ],
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    listenableIndicatorIndex.dispose();
-    super.dispose();
   }
 }

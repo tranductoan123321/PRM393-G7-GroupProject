@@ -1,80 +1,37 @@
-part of 'home_bloc.dart';
+import '../../../../components/productComponent/domain/entities/home_data.dart';
 
-class HomeState extends Equatable {
-  final List<Category> categories;
-  final BlocState categoriesState;
-  final String categoriesFailureMessage;
-  final List<Product> productsOffers;
-  final BlocState offersState;
-  final String offersFailureMessage;
-  final List<Brand> brands;
-  final BlocState brandsState;
-  final String brandsFailureMessage;
-  final Map<String, List<Product>> brandsProducts;
-  final BlocState brandsProductsState;
-  final String brandsProductsFailureMessage;
+enum HomeStatus { loading, success, failure }
 
+class HomeState {
   const HomeState({
-    this.categories = const [],
-    this.categoriesState = BlocState.initial,
-    this.categoriesFailureMessage = '',
-    this.productsOffers = const [],
-    this.offersState = BlocState.initial,
-    this.offersFailureMessage = '',
-    this.brands = const [],
-    this.brandsState = BlocState.initial,
-    this.brandsFailureMessage = '',
-    this.brandsProducts = const {},
-    this.brandsProductsState = BlocState.initial,
-    this.brandsProductsFailureMessage = '',
+    this.status = HomeStatus.loading,
+    this.data,
+    this.error,
+    this.gender = 0,
+    this.selectedCategories = const [],
+    this.collectionIndex = 0,
   });
 
-  @override
-  List<Object> get props =>
-      [
-        categories,
-        categoriesState,
-        categoriesFailureMessage,
-        productsOffers,
-        offersState,
-        offersFailureMessage,
-        brands,
-        brandsState,
-        brandsFailureMessage,
-        brandsProducts,
-        brandsProductsState,
-        brandsFailureMessage,
-      ];
+  final HomeStatus status;
+  final HomeData? data;
+  final String? error;
+  final int gender;
+  final List<String> selectedCategories;
+  final int collectionIndex;
 
   HomeState copyWith({
-    List<Category>? categories,
-    BlocState? categoriesState,
-    String? categoriesFailureMessage,
-    List<Product>? productsOffers,
-    BlocState? offersState,
-    String? offersFailureMessage,
-    List<Brand>? brands,
-    BlocState? brandsState,
-    String? brandsFailureMessage,
-    Map<String, List<Product>>? brandsProducts,
-    BlocState? brandsProductsState,
-    String? brandsProductsFailureMessage,
-  }) {
-    return HomeState(
-      categories: categories ?? this.categories,
-      categoriesState: categoriesState ?? this.categoriesState,
-      categoriesFailureMessage: categoriesFailureMessage ??
-          this.categoriesFailureMessage,
-      productsOffers: productsOffers ?? this.productsOffers,
-      offersState: offersState ?? this.offersState,
-      offersFailureMessage: offersFailureMessage ?? this.offersFailureMessage,
-      brands: brands ?? this.brands,
-      brandsState: brandsState ?? this.brandsState,
-      brandsFailureMessage: brandsFailureMessage ?? this.brandsFailureMessage,
-      brandsProducts: brandsProducts ?? this.brandsProducts,
-      brandsProductsState: brandsProductsState ?? this.brandsProductsState,
-      brandsProductsFailureMessage: brandsProductsFailureMessage ??
-          this.brandsProductsFailureMessage,
-    );
-  }
+    HomeStatus? status,
+    HomeData? data,
+    String? error,
+    int? gender,
+    List<String>? selectedCategories,
+    int? collectionIndex,
+  }) => HomeState(
+    status: status ?? this.status,
+    data: data ?? this.data,
+    error: error,
+    gender: gender ?? this.gender,
+    selectedCategories: selectedCategories ?? this.selectedCategories,
+    collectionIndex: collectionIndex ?? this.collectionIndex,
+  );
 }

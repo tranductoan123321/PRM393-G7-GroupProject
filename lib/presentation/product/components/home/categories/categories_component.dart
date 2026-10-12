@@ -1,191 +1,162 @@
-import 'package:efashion_flutter/presentation/product/bloc/home_bloc/home_bloc.dart';
-import 'package:efashion_flutter/presentation/product/components/home/categories/categories_button.dart';
-import 'package:efashion_flutter/presentation/product/components/home/categories/categories_shimmer_loading.dart';
-import 'package:efashion_flutter/presentation/product/components/home/categories/genders_categories.dart';
-import 'package:efashion_flutter/presentation/product/components/shared/section_widget.dart';
-import 'package:efashion_flutter/presentation/product/components/home/categories/titled_avatar.dart';
-import 'package:efashion_flutter/shared/util/strings_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class CategoriesComponent extends StatefulWidget {
-  const CategoriesComponent({super.key});
+import '../../../../../components/productComponent/domain/entities/category.dart';
+import '../../../bloc/home_bloc/home_cubit.dart';
+import '../../../bloc/home_bloc/home_state.dart';
+import '../../../../shared/widgets/home_network_image.dart';
+
+const _primary = Color(0xFF00629D);
+const _ink = Color(0xFF001D34);
+const _cardColor = Color(0xFFDEE3EB);
+
+class CategoriesComponent extends StatelessWidget {
+  const CategoriesComponent({
+    required this.categories,
+    required this.state,
+    super.key,
+  });
+
+  final List<HomeCategory> categories;
+  final HomeState state;
 
   @override
-  State<CategoriesComponent> createState() => _CategoriesComponentState();
+  Widget build(BuildContext context) => Column(
+    children: [
+      SizedBox(
+        height: 40,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Categories',
+                  style: TextStyle(fontSize: 14, color: _ink),
+                ),
+              ),
+              if (state.selectedCategories.isNotEmpty || state.gender != 0)
+                TextButton(
+                  onPressed: () => context.read<HomeCubit>().loadHome(),
+                  child: const Text('Apply'),
+                ),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(
+        height: 90,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          scrollDirection: Axis.horizontal,
+          children: [
+            _GenderCard(title: 'Woman', gender: 2, state: state),
+            const SizedBox(width: 10),
+            _GenderCard(title: 'Men', gender: 1, state: state),
+            if (categories.isNotEmpty) const SizedBox(width: 14),
+            for (final category in categories)
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: _CategoryCard(category: category, state: state),
+              ),
+          ],
+        ),
+      ),
+    ],
+  );
 }
 
-class _CategoriesComponentState extends State<CategoriesComponent> {
-  late final ScrollController _categoriesController;
-  ValueNotifier<double> animatedGendersWidth = ValueNotifier(145);
-  List selectedCategories = [];
-  ValueNotifier<bool> isApplyButtonActiveNotifier = ValueNotifier<bool>(false);
+class _GenderCard extends StatelessWidget {
+  const _GenderCard({
+    required this.title,
+    required this.gender,
+    required this.state,
+  });
 
-  @override
-  void initState() {
-    _categoriesController = ScrollController()..addListener(_onSwipeListener);
-    super.initState();
-  }
-
-  void _onSwipeListener() {
-    final maxScroll = _categoriesController.position.maxScrollExtent;
-    final currentScroll = _categoriesController.offset;
-    final scrollDirection = _categoriesController.position.userScrollDirection;
-    if (_categoriesController.position.userScrollDirection ==
-        ScrollDirection.reverse) {
-      if (animatedGendersWidth.value != 0) {
-        animatedGendersWidth.value = 0;
-      }
-    }
-    if (scrollDirection == ScrollDirection.forward &&
-        currentScroll < maxScroll * 0.05) {
-      if (animatedGendersWidth.value != 145) {
-        animatedGendersWidth.value = 145;
-      }
-    }
-  }
-
-  void _handelCategories({required String categoryId}) {
-    if (selectedCategories.contains(categoryId)) {
-      selectedCategories.removeWhere((element) => element == categoryId);
-    } else {
-      selectedCategories.add(categoryId);
-    }
-    if (selectedCategories.isNotEmpty) {
-      isApplyButtonActiveNotifier.value = selectedCategories.isNotEmpty;
-    } else {
-      isApplyButtonActiveNotifier.value = true;
-    }
-  }
+  final String title;
+  final int gender;
+  final HomeState state;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      buildWhen: (previous, current) => previous.categoriesState != current.categoriesState,
-      builder: (context, state) {
-        if (state.categories.isEmpty) {
-          return const CategoriesShimmerLoading();
-        } else {
-          return Column(
-            children: [
-              SizedBox(
-                height: 40.h,
-                child: Row(
-                  children: [
-                    const SectionWidget(
-                      sectionTitle: StringsManager.categorySectionTitle,
-                    ),
-                    const Spacer(flex: 1),
-                    ValueListenableBuilder(
-                      valueListenable: isApplyButtonActiveNotifier,
-                      builder: (context, isApplyButtonActive, child) =>
-                          CategoriesButton(
-                        isActive: isApplyButtonActive,
-                        onTap: () {
-                          isApplyButtonActiveNotifier.value = false;
-                          final categories = selectedCategories.join(',');
-                          context.read<HomeBloc>()
-                            ..add(GetProductOffersEvent(categories: categories))
-                            ..add(GetBrandsProductsEvent(categories: categories));
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+    final selected = state.gender == gender;
+    final imageUrl = gender == 2
+        ? 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200'
+        : 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200';
+    return InkWell(
+      onTap: () => context.read<HomeCubit>().loadHome(
+        gender: selected ? 0 : gender,
+        categoryIds: const [],
+      ),
+      child: Container(
+        width: 72,
+        decoration: BoxDecoration(
+          color: _cardColor,
+          border: selected ? Border.all(color: _primary, width: 2) : null,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ClipOval(
+              child: HomeNetworkImage(
+                imageUrl,
+                width: 46,
+                height: 46,
+                fit: BoxFit.cover,
+                fallbackIcon: Icons.person_outline,
               ),
-              SizedBox(height: 8.h),
-              SizedBox(
-                height: 84.h,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: _categoriesController,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16).r,
-                    child: Row(
-                      children: [
-                        ValueListenableBuilder(
-                          valueListenable: animatedGendersWidth,
-                          builder: (context, value, child) => GendersCategories(
-                            width: value.w,
-                            selectedGenders: (genderId) {
-                              context
-                                  .read<HomeBloc>()
-                                  .add(GetCategoriesEvent(genderId: genderId));
-                            },
-                          ),
-                        ),
-                        SizedBox(width: 14.w),
-                        Container(
-                          height: 84.h,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceVariant,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(15),
-                            ).r,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 6.w,
-                                height: 42.h,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  borderRadius: const BorderRadius.only(
-                                    topRight: Radius.circular(5),
-                                    bottomRight: Radius.circular(5),
-                                  ).r,
-                                ),
-                              ),
-                              SizedBox(width: 10.w),
-                              BlocBuilder<HomeBloc, HomeState>(
-                                buildWhen: (previous, current) =>
-                                    previous.categories != current.categories,
-                                builder: (context, state) {
-                                  return ListView.builder(
-                                    itemCount: state.categories.length,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(right: 10.0).r,
-                                        child: TitledAvatar(
-                                          onTap: () {
-                                            _handelCategories(
-                                              categoryId:
-                                                  state.categories[index].id,
-                                            );
-                                          },
-                                          imagePath: state.categories[index].imageUrl,
-                                          title: state.categories[index].name,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }
-      },
+            ),
+            Text(title, style: const TextStyle(fontSize: 11)),
+          ],
+        ),
+      ),
     );
   }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({required this.category, required this.state});
+
+  final HomeCategory category;
+  final HomeState state;
 
   @override
-  void dispose() {
-    _categoriesController..dispose()..removeListener(_onSwipeListener);
-    animatedGendersWidth.dispose();
-    isApplyButtonActiveNotifier.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    final selected = state.selectedCategories.contains(category.id);
+    return InkWell(
+      onTap: () => context.read<HomeCubit>().toggleCategory(category.id),
+      child: Container(
+        width: 82,
+        decoration: BoxDecoration(
+          color: _cardColor,
+          border: selected ? Border.all(color: _primary, width: 2) : null,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ClipOval(
+              child: HomeNetworkImage(
+                category.imageUrl,
+                width: 46,
+                height: 46,
+                fit: BoxFit.cover,
+                fallbackIcon: Icons.checkroom_outlined,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: Text(
+                category.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 10),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

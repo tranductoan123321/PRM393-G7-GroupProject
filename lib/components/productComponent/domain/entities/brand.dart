@@ -1,11 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'product.dart';
 
-class Brand extends Equatable{
+class HomeBrand {
+  const HomeBrand({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.products,
+  });
+
   final String id;
   final String name;
-
-  const Brand({required this.id, required this.name});
-
-  @override
-  List<Object?> get props => [id, name];
+  final String imageUrl;
+  final List<HomeProduct> products;
 }

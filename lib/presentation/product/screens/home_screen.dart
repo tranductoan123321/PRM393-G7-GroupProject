@@ -1,88 +1,125 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:efashion_flutter/presentation/product/bloc/collections_cubit/collections_cubit.dart';
-import 'package:efashion_flutter/presentation/product/components/home/collection/collection_carousel_component.dart';
-import 'package:efashion_flutter/presentation/shared/widgets/no_internet_connection_widget.dart';
-import 'package:efashion_flutter/shared/constants/app_constants.dart';
-import 'package:efashion_flutter/presentation/product/bloc/home_bloc/home_bloc.dart';
-import 'package:efashion_flutter/presentation/product/components/home/categories/categories_component.dart';
-import 'package:efashion_flutter/presentation/product/components/home/offers/offers_carousel_component.dart';
-import 'package:efashion_flutter/presentation/product/components/home/brands/brand_component.dart';
-import 'package:efashion_flutter/injection_container.dart';
-import 'package:efashion_flutter/shared/util/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-@RoutePage()
-class HomeScreen extends StatefulWidget implements AutoRouteWrapper {
+import '../../../components/productComponent/domain/entities/home_data.dart';
+import '../bloc/home_bloc/home_cubit.dart';
+import '../bloc/home_bloc/home_state.dart';
+import '../components/home/brands/brand_component.dart';
+import '../components/home/categories/categories_component.dart';
+import '../components/home/collection/collection_carousel_component.dart';
+import '../components/home/offers/offers_carousel_component.dart';
+
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget wrappedRoute(BuildContext context) {
-    return BlocProvider(
-      create: (context) => getIt<HomeBloc>()
-        ..add(const GetCategoriesEvent(genderId: AppConstants.allGendersId))
-        ..add(const GetProductOffersEvent())
-        ..add(const GetBrandsEvent()),
-      child: this,
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        if (state.status == HomeStatus.failure) {
+          return _buildError(
+            context,
+            state.error ?? 'Could not load Home data.',
+          );
+        }
+        if (state.status == HomeStatus.loading || state.data == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildHome(state.data!, state);
+      },
     );
   }
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  bool isLoading = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHome(HomeData data, HomeState state) {
     return Scaffold(
-      body: BlocConsumer<HomeBloc, HomeState>(
-        buildWhen: (previous, current) => previous.categoriesState != current.categoriesState,
-        listener: (context, state) {
-          if (state.offersState == BlocState.loading ||
-              state.brandsProductsState == BlocState.loading ||
-              state.categoriesState == BlocState.loading ||
-              state.brandsState == BlocState.loading) {
-            isLoading = true;
-          } else {
-            isLoading = false;
-          }
-        },
-        builder: (context, state) {
-          if (state.offersState == BlocState.failure ||
-              state.brandsProductsState == BlocState.failure ||
-              state.categoriesState == BlocState.failure) {
-            return NoInternetConnectionWidget(
-              isButtonLoading: isLoading,
-              onButtonTap: () {
-                context.read<HomeBloc>()
-                  ..add(const GetCategoriesEvent(
-                      genderId: AppConstants.allGendersId))
-                  ..add(const GetProductOffersEvent())
-                  ..add(const GetBrandsEvent());
-                context.read<CollectionsCubit>().getCollectionsList();
-              },
-            );
-          } else {
-            return ListView(
-              scrollDirection: Axis.vertical,
-              cacheExtent: double.infinity,
-              padding: EdgeInsets.zero,
-              children: [
-                const CollectionCarouselComponent(),
-                SizedBox(height: 10.h),
-                const CategoriesComponent(),
-                SizedBox(height: 20.h),
-                const OffersCarouselComponent(),
-                SizedBox(height: 20.h),
-                const BrandComponent(),
-                SizedBox(height: 100.h),
-              ],
-            );
-          }
-        },
+      backgroundColor: const Color(0xFFF1F0F4),
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          CollectionCarouselComponent(
+            collections: data.collections,
+            collectionIndex: state.collectionIndex,
+            categories: data.categories,
+            brands: data.brands,
+          ),
+          const SizedBox(height: 10),
+          CategoriesComponent(categories: data.categories, state: state),
+          const SizedBox(height: 20),
+          OffersCarouselComponent(offers: data.offers),
+          const SizedBox(height: 20),
+          BrandComponent(brands: data.brands),
+          const SizedBox(height: 100),
+        ],
+      ),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  Widget _buildError(BuildContext context, String message) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off_outlined, size: 48),
+              const SizedBox(height: 12),
+              const Text(
+                'Could not load Home data',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(message, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () => context.read<HomeCubit>().loadHome(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try again'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: BottomNavigationBar(
+          currentIndex: 0,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.black.withValues(alpha: 0.8),
+          selectedItemColor: const Color(0xFF00629D),
+          unselectedItemColor: Colors.white.withValues(alpha: 0.6),
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          onTap: null,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag_outlined),
+              label: 'Cart',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_border),
+              label: 'Favorite',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: 'Account',
+            ),
+          ],
+        ),
       ),
     );
   }

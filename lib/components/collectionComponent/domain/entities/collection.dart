@@ -1,29 +1,17 @@
-import 'package:equatable/equatable.dart';
-
-class Collection extends Equatable {
-  final String id;
-  final String title;
-  final String description;
-  final int price;
-  final int discount;
-  final String image;
-
-  const Collection({
+class HomeCollection {
+  const HomeCollection({
     required this.id,
     required this.title,
     required this.description,
     required this.price,
     required this.discount,
-    required this.image,
+    required this.imageUrl,
   });
 
-  @override
-  List<Object?> get props => [
-        id,
-        title,
-        description,
-        price,
-        discount,
-        image,
-      ];
+  final String id;
+  final String title;
+  final String description;
+  final num price;
+  final int discount;
+  final String imageUrl;
 }

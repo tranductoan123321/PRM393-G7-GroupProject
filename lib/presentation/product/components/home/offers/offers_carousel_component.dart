@@ -1,134 +1,102 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:efashion_flutter/presentation/product/components/home/offers/offers_shimmer_loading.dart';
-import 'package:efashion_flutter/presentation/shared/widgets/section_shimmer_loading.dart';
-import 'package:efashion_flutter/core/router/app_router.dart';
-import 'package:efashion_flutter/presentation/product/bloc/details_cubit/details_cubit.dart';
-import 'package:efashion_flutter/presentation/product/bloc/home_bloc/home_bloc.dart';
-import 'package:efashion_flutter/presentation/product/components/shared/section_widget.dart';
-import 'package:efashion_flutter/injection_container.dart';
-import 'package:efashion_flutter/presentation/shared/bloc/favorite_cubit/favorite_cubit.dart';
-import 'package:efashion_flutter/presentation/product/screens/discover_products_screen.dart';
-import 'package:efashion_flutter/presentation/shared/widgets/cart_bottom_sheet.dart';
-import 'package:efashion_flutter/presentation/product/components/home/offers/offers_card.dart';
-import 'package:efashion_flutter/shared/util/enums.dart';
-import 'package:efashion_flutter/shared/util/strings_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class OffersCarouselComponent extends StatefulWidget {
-  const OffersCarouselComponent({super.key});
+import '../../../../../components/productComponent/domain/entities/product.dart';
+import '../../../../shared/widgets/home_network_image.dart';
+import '../../../../shared/widgets/home_section_title.dart';
+
+const _ink = Color(0xFF001D34);
+
+class OffersCarouselComponent extends StatelessWidget {
+  const OffersCarouselComponent({required this.offers, super.key});
+
+  final List<HomeProduct> offers;
 
   @override
-  State<OffersCarouselComponent> createState() => _OffersCarouselComponentState();
-}
-
-class _OffersCarouselComponentState extends State<OffersCarouselComponent> {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      buildWhen: (previous, current) => previous.productsOffers != current.productsOffers,
-      builder: (context, state) {
-        return Column(
-          children: [
-        state.offersState == BlocState.initial || state.offersState == BlocState.loading? const SectionShimmerLoading():
-          Builder(
-            builder: (context) {
-              if(state.productsOffers.isEmpty && state.brandsState == BlocState.success){
-                return const SizedBox.shrink();
-              }else{
-                return SectionWidget(
-                  sectionTitle: StringsManager.offersSectionTitle,
-                  sectionType: SectionType.withTextButton,
-                  onTextButtonTap: () {
-                    context.pushRoute(DiscoverProductsRoute(
-                      categories: context.read<HomeBloc>().categories,
-                      discoverScreenType: DiscoverScreenType.offers,
-                    ));
-                  },
-                );
-              }
-            }
+  Widget build(BuildContext context) => Column(
+    children: [
+      const HomeSectionTitle(title: 'Offers', action: 'Discover'),
+      if (offers.isEmpty)
+        const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('No offers available.'),
+        )
+      else
+        SizedBox(
+          height: 180,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: offers.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final product = offers[index];
+              return SizedBox(
+                width: 230,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      HomeNetworkImage(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        fallbackIcon: Icons.image_not_supported_outlined,
+                      ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          height: 72,
+                          color: _ink.withValues(alpha: 0.82),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                child: Text(
+                                  product.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '\$${product.oldPrice}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF99CBFF),
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    '\$${product.price}',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Icon(Icons.favorite_border, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-            Builder(
-              builder: (context) {
-                if (state.productsOffers.isEmpty && state.brandsState == BlocState.success) {
-                  return const SizedBox.shrink();
-                } else {
-                  return CarouselSlider.builder(
-                    itemCount: state.offersState == BlocState.loading ? 3 : state.productsOffers.length,
-                    itemBuilder: (context, index, realIndex) {
-                      if (state.offersState == BlocState.initial || state.offersState == BlocState.loading) {
-                        return const OffersShimmerLoading();
-                      } else {
-                        final productId = state.productsOffers[index].id;
-                        final productImage = state.productsOffers[index].imageUrl;
-                        final productName = state.productsOffers[index].title;
-                        final newPrice = state.productsOffers[index].price.toInt();
-                        final oldPrice = state.productsOffers[index].oldPrice.toInt();
-                        return BlocBuilder<FavoriteCubit, FavoriteState>(
-                          buildWhen: (previous, current) => previous != current,
-                          builder: (context, state) {
-                            return OffersCard(
-                              productImage: productImage,
-                              productName: productName,
-                              newPrice: newPrice,
-                              oldPrice: oldPrice,
-                              isFavorite: state.favoritesIds.contains(
-                                  productId),
-                              onAddToCart: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return BlocProvider(
-                                      create: (context) => getIt<DetailsCubit>()..getProductDetails(productId: productId),
-                                      child: BlocBuilder<
-                                          DetailsCubit,
-                                          DetailsState>(
-                                        buildWhen: (previous, current) =>
-                                        previous.productDetailsState != current.productDetailsState,
-                                        builder: (context, state) {
-                                          return CartBottomSheet(
-                                            productName: state.productDetails.title,
-                                            productId: state.productDetails.id,
-                                            productPrice: state.productDetails.price.toInt(),
-                                            productColors: state.productDetails.colors,
-                                            productSizes: state.productDetails.sizes,
-                                            productStock: state.productDetails.stock,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                              onFavorite: () {
-                                context.read<FavoriteCubit>().addOrRemoveProductFromFavoriteListEvent(
-                                    productId: productId,
-                                );
-                              },
-                              onOfferTap: () {
-                                context.pushRoute(
-                                    ProductDetailsRoute(productId: productId));
-                              },
-                            );
-                          },
-                        );
-                      }
-                    },
-                    options: CarouselOptions(
-                      height: 180.h,
-                      viewportFraction: 0.65,
-                      enlargeCenterPage: true,
-                    ),
-                  );
-                }
-              }
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ),
+    ],
+  );
 }
