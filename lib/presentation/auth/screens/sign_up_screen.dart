@@ -38,8 +38,8 @@ class _SignupScreenState extends State<SignupScreen> {
   late String _fullName;
   late String _email;
   late String _password;
-  late String _confirmPassword;
-  bool _isLoading = false;
+  late String _phoneNumber;
+
   bool isChecked = false;
   ValueNotifier<bool> checkBoxError = ValueNotifier<bool>(false);
 
@@ -56,11 +56,8 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       body: BlocListener<SignupCubit, SignupState>(
         listener: (context, state) {
-          if (state is SignupLoadingState) {
-            _isLoading = true;
-          } else if (state is SignupSuccessState) {
+          if (state is SignupSuccessState) {
             context.replaceRoute(const BottomNavBarRoute());
-            _isLoading = false;
           } else if (state is SignupFailState) {
             ScaffoldMessenger.of(context).showSnackBar(
               CustomSnackBar.show(
@@ -69,9 +66,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 context: context,
               ),
             );
-            _isLoading = false;
-          } else {
-            _isLoading = false;
           }
         },
         child: BlurredAuthBody(
@@ -91,9 +85,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     Text(
                       StringsManager.signupTitle,
                       style:
-                          Theme.of(context).textTheme.headlineSmall!.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                      Theme.of(context).textTheme.headlineSmall!.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                     SizedBox(
                       height: 40.h,
@@ -116,7 +110,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       hintText: StringsManager.email,
                       onSaved: (value) {
                         if (value != null) {
-                          _email = value;
+                          _email = value.trim();
                         }
                       },
                       validator: ValidationManager.emailValidator(),
@@ -129,7 +123,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         hintText: StringsManager.phoneNumber,
                         onSaved: (value) {
                           if (value != null) {
-                            _confirmPassword = value;
+                            _phoneNumber = value;
                           }
                         },
                         validator: ValidationManager.phoneNumberValidator(phoneController: _phoneNumberController)
@@ -168,16 +162,18 @@ class _SignupScreenState extends State<SignupScreen> {
                           width: 312.w,
                           height: 46.h,
                           onTap: () {
-                            if (_formKey.currentState!.validate() &&
-                                isChecked) {
+                            if (_formKey.currentState!.validate() && isChecked) {
                               _formKey.currentState!.save();
                               checkBoxError.value = false;
+
+                              final cleanEmail = _email.trim();
+                              final cleanPassword = _passwordController.text.trim();
                               context.read<SignupCubit>().signUp(
-                                    fullName: _fullName,
-                                    email: _email,
-                                    password: _password,
-                                    phoneNumber: _confirmPassword,
-                                  );
+                                fullName: _fullName.trim(),
+                                email: cleanEmail,
+                                password: cleanPassword,
+                                phoneNumber: _phoneNumber.trim(),
+                              );
                             } else {
                               debugPrint(isChecked.toString());
                               _formKey.currentState!.validate();
@@ -185,7 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             }
                           },
                           buttonTitle: StringsManager.signupTitle,
-                          isLoading: _isLoading,
+                          isLoading: state is SignupLoadingState,
                         );
                       },
                     ),
@@ -207,8 +203,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                 .textTheme
                                 .bodySmall!
                                 .copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                           onPressed: () {
                             context.popRoute();
@@ -228,7 +224,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
-    _formKey.currentState?.dispose();
     _passwordController.dispose();
     _phoneNumberController.dispose();
     checkBoxError.dispose();
