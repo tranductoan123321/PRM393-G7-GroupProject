@@ -4,9 +4,10 @@ import 'package:flutter/cupertino.dart';
 class ValidationManager {
   static basicValidator({required String? label}) {
     return (value) {
-      if (value!.isEmpty) {
+      // Sửa: Kiểm tra null an toàn thay vì dùng value!
+      if (value == null || value.trim().isEmpty) {
         return '$label ${StringsManager.textIsRequired}';
-      } else if (value.length < 8) {
+      } else if (value.trim().length < 8) {
         return '$label ${StringsManager.textIsTooShort}';
       }
       return null;
@@ -16,7 +17,8 @@ class ValidationManager {
   static phoneNumberValidator({required TextEditingController phoneController,}){
     final phoneNumberRegex = RegExp(r'^\d{10}$');
     return  (value) {
-      if (!phoneNumberRegex.hasMatch(value ?? '')) {
+      // Thêm .trim() để loại bỏ khoảng trắng thừa
+      if (!phoneNumberRegex.hasMatch((value ?? '').trim())) {
         return StringsManager.phoneNumberValidationMessage;
       } else {
         return null;
@@ -27,7 +29,8 @@ class ValidationManager {
   static emailValidator() {
     return (value) {
       final emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$');
-      if (!emailRegex.hasMatch(value ?? '')) {
+      // Sửa: Đã thêm .trim() vào đây để fix lỗi ở ảnh trước
+      if (!emailRegex.hasMatch((value ?? '').trim())) {
         return StringsManager.emailValidationMessage;
       }
       return null;
@@ -60,6 +63,7 @@ class ValidationManager {
       }
     };
   }
+
   static passwordValidator({
     required TextEditingController passwordController,
   }) {
@@ -85,7 +89,8 @@ class ValidationManager {
 
   static reviewValidator(){
     return (value) {
-      if(value!.length < 20){
+      // Sửa: Kiểm tra null an toàn thay vì dùng value!
+      if(value == null || value.trim().length < 20){
         return StringsManager.reviewValidationMessage;
       }else{
         return null;
