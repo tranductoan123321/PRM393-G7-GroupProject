@@ -10,6 +10,7 @@ import 'package:efashion_flutter/shared/util/assets_manager.dart';
 import 'package:efashion_flutter/shared/util/enums.dart';
 import 'package:efashion_flutter/shared/util/strings_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:efashion_flutter/presentation/shared/widgets/custom_snack_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -38,24 +39,38 @@ class _CartScreenState extends State<CartScreen> {
             ),
             Expanded(
               child: BlocConsumer<CartCubit, CartState>(
+                listenWhen: (previous, current) =>
+                    previous.cartState != current.cartState ||
+                    previous.cartMessage != current.cartMessage,
                 listener: (context, state) {
-                  if(state.cartState == CubitState.loading){
+                  if (state.cartState == CubitState.failure &&
+                      state.cartMessage.isNotEmpty) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(CustomSnackBar.show(
+                      customSnackBarType: CustomSnackBarType.error,
+                      message: state.cartMessage,
+                      context: context,
+                    ));
+                  }
+                  if (state.cartState == CubitState.loading) {
                     isLoading = true;
-                  }else{
+                  } else {
                     isLoading = false;
                   }
                 },
                 builder: (context, state) {
-
-                  if (state.cartState == CubitState.initial || state.cartState == CubitState.loading) {
+                  if (state.cartState == CubitState.initial ||
+                      state.cartState == CubitState.loading) {
                     return const CartShimmerLoading();
-                  } else if (state.cart.products.isEmpty && state.cartState == CubitState.success) {
+                  } else if (state.cart.products.isEmpty &&
+                      state.cartState == CubitState.success) {
                     return const EmptyWidget(
                       image: AssetsManager.cartImage,
                       title: StringsManager.emptyCartTitle,
                       subTitle: StringsManager.emptyCartSubTitle,
                     );
-                  } else if (state.cartState == CubitState.failure && state.cart.products.isEmpty) {
+                  } else if (state.cartState == CubitState.failure &&
+                      state.cart.products.isEmpty) {
                     return NoInternetConnectionWidget(
                       onButtonTap: () {
                         context.read<CartCubit>().getCartProducts();

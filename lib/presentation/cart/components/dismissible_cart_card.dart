@@ -18,7 +18,9 @@ class DismissibleCartCard extends StatefulWidget {
   final int quantity;
   final void Function() onPiecesIncrement;
   final void Function() onPiecesDecrement;
-  final void Function(DismissDirection dismissDirection) onDismissed;
+  final Future<bool?> Function(DismissDirection)? confirmDismiss;
+  final void Function(DismissDirection)? onDismissed;
+  final bool isUpdating;
   const DismissibleCartCard({
     super.key,
     required this.productName,
@@ -31,16 +33,17 @@ class DismissibleCartCard extends StatefulWidget {
     required this.quantity,
     required this.onPiecesIncrement,
     required this.onPiecesDecrement,
-    required this.onDismissed,
+    this.onDismissed,
+    this.confirmDismiss,
+    this.isUpdating = false,
   });
-
 
   @override
   State<DismissibleCartCard> createState() => _DismissibleCartCardState();
 }
 
 class _DismissibleCartCardState extends State<DismissibleCartCard> {
-  int _cleanHexCode(String hexCode){
+  int _cleanHexCode(String hexCode) {
     String cleanedHex = hexCode.replaceAll("#", "");
     return int.parse('0xFF$cleanedHex');
   }
@@ -51,7 +54,10 @@ class _DismissibleCartCardState extends State<DismissibleCartCard> {
       borderRadius: BorderRadius.circular(20).r,
       child: Dismissible(
         key: widget.key!,
-        direction: DismissDirection.endToStart,
+        direction: widget.isUpdating
+            ? DismissDirection.none
+            : DismissDirection.endToStart,
+        confirmDismiss: widget.confirmDismiss,
         onDismissed: widget.onDismissed,
         background: Container(
           color: Theme.of(context).colorScheme.error,
@@ -59,103 +65,134 @@ class _DismissibleCartCardState extends State<DismissibleCartCard> {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Iconsax.trash, color: Colors.white,),
+              const Icon(
+                Iconsax.trash,
+                color: Colors.white,
+              ),
               SizedBox(width: 30.w),
             ],
           ),
         ),
-        child: Container(
-          width: 312.w,
-          height: 140.h,
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 8,
-            ).r,
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15).r,
-                  child: CachedNetworkImage(
-                    width: 90.w,
-                    height: 120.h,
-                    fit: BoxFit.cover,
-                    imageUrl: widget.productImage,
-                    cacheManager: CacheManager(
-                      Config(
-                        AppConstants.cacheFolder,
-                        stalePeriod:
-                        const Duration(days: AppConstants.cacheDuration),
+        child: AbsorbPointer(
+          absorbing: widget.isUpdating,
+          child: Container(
+            width: 312.w,
+            height: 140.h,
+            color: Theme.of(context).colorScheme.surfaceVariant,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 8,
+              ).r,
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(15).r,
+                    child: CachedNetworkImage(
+                      width: 90.w,
+                      height: 120.h,
+                      fit: BoxFit.cover,
+                      imageUrl: widget.productImage,
+                      cacheManager: CacheManager(
+                        Config(
+                          AppConstants.cacheFolder,
+                          stalePeriod:
+                              const Duration(days: AppConstants.cacheDuration),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  width: 24.w,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.productName.length > 15
-                          ? widget.productName.substring(0, 15)
-                          : widget.productName,
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                    ),
-                    SizedBox(
-                      height: widget.selectedSize == null && widget.selectedColor == null ? 0 : 10.h,
-                    ),
-                    widget.selectedColor != null ?
-                        Row(
-                          children: [
-                            Text(StringsManager.colorSection,
-                              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
-                             ),
+                  SizedBox(
+                    width: 24.w,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.productName.length > 15
+                            ? widget.productName.substring(0, 15)
+                            : widget.productName,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium!
+                            .copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
-                            SizedBox(width: 4.w),
-                            CircleAvatar(
-                              radius: 7.r,
-                              backgroundColor: Color(_cleanHexCode(widget.selectedColor!)),
-                            ),
-                          ],
-                        )
-                        : const SizedBox.shrink(),
-                    SizedBox(height: widget.selectedSize == null && widget.selectedColor == null ?  0 : 4.h),
-                    widget.selectedSize != null
-                        ? Text(
-                            '${StringsManager.sizeSection}${widget.selectedSize!}',
-                            style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      SizedBox(
+                        height: widget.selectedSize == null &&
+                                widget.selectedColor == null
+                            ? 0
+                            : 10.h,
+                      ),
+                      widget.selectedColor != null
+                          ? Row(
+                              children: [
+                                Text(
+                                  StringsManager.colorSection,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall!
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
                                 ),
+                                SizedBox(width: 4.w),
+                                CircleAvatar(
+                                  radius: 7.r,
+                                  backgroundColor: Color(
+                                      _cleanHexCode(widget.selectedColor!)),
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
+                      SizedBox(
+                          height: widget.selectedSize == null &&
+                                  widget.selectedColor == null
+                              ? 0
+                              : 4.h),
+                      widget.selectedSize != null
+                          ? Text(
+                              '${StringsManager.sizeSection}${widget.selectedSize!}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                            )
+                          : const SizedBox.shrink(),
+                      Row(
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 100),
+                            child: Text(
+                              key: ValueKey<int>(widget.totalPrice),
+                              '${StringsManager.currencySign}${widget.totalPrice}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                            ),
+                          ),
+                          ProductPiecesCounter(
+                            onIncrementPress: widget.onPiecesIncrement,
+                            onDecrementPress: widget.onPiecesDecrement,
+                            productPieces: widget.quantity,
                           )
-                        : const SizedBox.shrink(),
-                    Row(
-                      children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 100),
-                          child: Text(
-                            key: ValueKey<int>(widget.totalPrice),
-                            '${StringsManager.currencySign}${widget.totalPrice}',
-                            style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                          ),
-                        ),
-                        ProductPiecesCounter(
-                          onIncrementPress: widget.onPiecesIncrement,
-                          onDecrementPress: widget.onPiecesDecrement,
-                          productPieces: widget.quantity,
-                        )
-                      ],
-                    )
-                  ],
-                )
-              ],
+                        ],
+                      )
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         ),

@@ -11,20 +11,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class PaymentComponent extends StatefulWidget{
+class PaymentComponent extends StatefulWidget {
   const PaymentComponent({super.key});
 
   @override
   State<PaymentComponent> createState() => _PaymentComponentState();
 }
 
-class _PaymentComponentState extends State<PaymentComponent> with AutoRouteAwareStateMixin{
+class _PaymentComponentState extends State<PaymentComponent>
+    with AutoRouteAwareStateMixin {
   bool isCheckOutLoading = false;
   @override
   void didPopNext() {
     context.read<CartCubit>().getCartProducts();
     super.didPopNext();
   }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -43,7 +45,8 @@ class _PaymentComponentState extends State<PaymentComponent> with AutoRouteAware
                     Text(
                       StringsManager.cartSubTotal,
                       style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                     AnimatedSwitcher(
@@ -51,7 +54,9 @@ class _PaymentComponentState extends State<PaymentComponent> with AutoRouteAware
                       child: Text(
                         key: ValueKey<int>(state.cart.subTotal),
                         '${StringsManager.currencySign}${state.cart.subTotal}',
-                        style: Theme.of(context).textTheme.titleMedium!
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium!
                             .copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
@@ -63,49 +68,65 @@ class _PaymentComponentState extends State<PaymentComponent> with AutoRouteAware
             ),
             SizedBox(height: 8.h),
             BlocConsumer<CartCubit, CartState>(
-              listenWhen: (previous, current) => previous.paymentState != current.paymentState,
+              listenWhen: (previous, current) =>
+                  previous.paymentState != current.paymentState,
               listener: (context, state) async {
                 if (state.paymentState == CubitState.loading) {
-                  isCheckOutLoading = true;
+                  // Loading indicator follows paymentState.
                 } else if (state.paymentState == CubitState.success) {
-                  isCheckOutLoading = false;
-                  await getIt<PaymentManager>().initPaymentSheet(
-                    clientSecretKey: state.paymentClientSecret,
-                    context: context,
-                    onFailure: (error) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          CustomSnackBar.show(
-                            customSnackBarType: CustomSnackBarType.error,
-                            message: error,
-                            context: context,
-                          ),
-                        );
-                      }
-                    },
-                    onSuccess: () {
-                      context.pushRoute(OrderReceiptRoute(paymentType: PaymentType.cart));
-                    },
-                  );
-                } else if(state.paymentState == CubitState.failure){
+                  if (isCheckOutLoading) return;
+                  setState(() => isCheckOutLoading = true);
+                  try {
+                    await getIt<PaymentManager>().initPaymentSheet(
+                      clientSecretKey: state.paymentClientSecret,
+                      context: context,
+                      onFailure: (error) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            CustomSnackBar.show(
+                              customSnackBarType: CustomSnackBarType.error,
+                              message: error,
+                              context: context,
+                            ),
+                          );
+                        }
+                      },
+                      onSuccess: () {
+                        if (mounted)
+                          context.pushRoute(
+                              OrderReceiptRoute(paymentType: PaymentType.cart));
+                      },
+                    );
+                  } finally {
+                    if (mounted) setState(() => isCheckOutLoading = false);
+                  }
+                } else if (state.paymentState == CubitState.failure) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     CustomSnackBar.show(
                       customSnackBarType: CustomSnackBarType.error,
-                      message: StringsManager.cartLocationError,
+                      message: state.paymentMessage,
                       context: context,
                     ),
                   );
                   isCheckOutLoading = false;
-                }else{
+                } else {
                   isCheckOutLoading = false;
                 }
               },
-              buildWhen: (previous, current) => previous.paymentState != current.paymentState,
+              buildWhen: (previous, current) =>
+                  previous.paymentState != current.paymentState ||
+                  previous.isUpdating != current.isUpdating,
               builder: (context, state) => PrimaryButton(
                 buttonTitle: StringsManager.cartCheckOutButtonTitle,
-                isLoading: isCheckOutLoading,
+                isLoading: isCheckOutLoading ||
+                    state.paymentState == CubitState.loading ||
+                    state.isUpdating,
                 onTap: () {
-                  context.read<CartCubit>().createPaymentIntent();
+                  if (!isCheckOutLoading &&
+                      !state.isUpdating &&
+                      state.paymentState != CubitState.loading) {
+                    context.read<CartCubit>().createPaymentIntent();
+                  }
                 },
               ),
             ),

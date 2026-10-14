@@ -2,6 +2,7 @@ part of 'cart_cubit.dart';
 
 class CartState extends Equatable {
   final Cart cart;
+  final bool isUpdating;
   final CubitState cartState;
   final String cartMessage;
   final int selectedQuantity;
@@ -15,6 +16,8 @@ class CartState extends Equatable {
   @override
   List<Object?> get props => [
         cart,
+        isUpdating,
+        paymentClientSecret,
         cartState,
         cartMessage,
         selectedQuantity,
@@ -25,6 +28,7 @@ class CartState extends Equatable {
       ];
 
   const CartState({
+    this.isUpdating = false,
     this.cart = const Cart(
       products: [],
       subTotal: 0,
@@ -43,6 +47,7 @@ class CartState extends Equatable {
 
   CartState copyWith({
     Cart? cart,
+    bool? isUpdating,
     CubitState? cartState,
     String? cartMessage,
     int? selectedQuantity,
@@ -54,10 +59,12 @@ class CartState extends Equatable {
   }) {
     return CartState(
       cart: cart ?? this.cart,
+      isUpdating: isUpdating ?? this.isUpdating,
       cartState: cartState ?? this.cartState,
       cartMessage: cartMessage ?? this.cartMessage,
       selectedQuantity: selectedQuantity ?? this.selectedQuantity,
-      selectedColor: selectedColor != null ? selectedColor() : this.selectedColor,
+      selectedColor:
+          selectedColor != null ? selectedColor() : this.selectedColor,
       selectedSize: selectedSize != null ? selectedSize() : this.selectedSize,
       paymentClientSecret: paymentClientSecret ?? this.paymentClientSecret,
       paymentState: paymentState ?? this.paymentState,

@@ -28,9 +28,20 @@ class CartCubit extends Cubit<CartState> {
     this._createPaymentIntentUseCase,
   ) : super(const CartState());
 
+  bool get _busy =>
+      state.isUpdating ||
+      state.cartState == CubitState.loading ||
+      state.paymentState == CubitState.loading;
+
   Future<void> getCartProducts() async {
-    emit(state.copyWith(cartState: CubitState.loading));
+    if (_busy) return;
+    emit(state.copyWith(
+        cartState: CubitState.loading,
+        cartMessage: '',
+        paymentClientSecret: '',
+        paymentState: CubitState.initial));
     final response = await _getCartProductsUseCase();
+    if (isClosed) return;
     response.fold(
       (failure) => emit(
         state.copyWith(
@@ -59,98 +70,107 @@ class CartCubit extends Cubit<CartState> {
         paymentState: CubitState.initial,
       ),
     );
-      final response = await _addProductToCartUseCase(
-        productId: productId,
-        productColor: state.selectedColor,
-        productSize: state.selectedSize,
-        productQuantity: state.selectedQuantity,
-      );
-      response.fold(
-        (failure) => emit(
-          state.copyWith(
-            cartState: CubitState.failure,
-            cartMessage: failure.message,
-          ),
+    final response = await _addProductToCartUseCase(
+      productId: productId,
+      productColor: state.selectedColor,
+      productSize: state.selectedSize,
+      productQuantity: state.selectedQuantity,
+    );
+    response.fold(
+      (failure) => emit(
+        state.copyWith(
+          cartState: CubitState.failure,
+          cartMessage: failure.message,
         ),
-        (cartProducts) => emit(
-          state.copyWith(
-              cart: cartProducts,
-              cartState: CubitState.success,
-          ),
+      ),
+      (cartProducts) => emit(
+        state.copyWith(
+          cart: cartProducts,
+          cartState: CubitState.success,
         ),
-      );
+      ),
+    );
   }
 
-  Future<void> removeProductFromCart({required String productId, required String productName}) async {
-      final response = await _removeProductFromCartUseCase(
-        productId: productId,
-      );
-      response.fold(
-        (failure) => emit(
-          state.copyWith(
-            cartState: CubitState.failure,
-            cartMessage: failure.message,
-            paymentState: CubitState.initial,
-          ),
-        ),
-        (cart) {
-          emit(
-            state.copyWith(
-              cart: cart,
-              cartState: CubitState.success,
-              paymentState: CubitState.initial,
-            ),
-          );
-        },
-      );
+  Future<void> removeProductFromCart(
+      {required String productId, required String productName}) async {
+    if (_busy) return;
+    emit(state.copyWith(
+        isUpdating: true,
+        cartMessage: '',
+        paymentState: CubitState.initial,
+        paymentClientSecret: ''));
+    final response = await _removeProductFromCartUseCase(productId: productId);
+    if (isClosed) return;
+    response.fold(
+      (failure) => emit(state.copyWith(
+          isUpdating: false,
+          cartState: CubitState.failure,
+          cartMessage: failure.message)),
+      (cart) => emit(state.copyWith(
+          isUpdating: false, cart: cart, cartState: CubitState.success)),
+    );
   }
 
   Future<void> createPaymentIntent({String? collectionId}) async {
-    emit(state.copyWith(paymentState: CubitState.loading));
-      final response = await _createPaymentIntentUseCase(
-        paymentType: PaymentType.cart,
-        collectionId: collectionId,
-      );
-      response.fold(
-        (failure) => emit(
-          state.copyWith(
-            paymentState: CubitState.failure,
-            paymentMessage: failure.message,
-          ),
-        ),
-        (clientSecret) {
-          emit(
-            state.copyWith(
+    if (_busy) return;
+    if (state.cart.products.isEmpty || state.cart.total <= 0) {
+      emit(state.copyWith(
+          paymentState: CubitState.failure,
+          paymentClientSecret: '',
+          paymentMessage: 'Your cart is empty.'));
+      return;
+    }
+    emit(state.copyWith(
+        paymentState: CubitState.loading,
+        paymentClientSecret: '',
+        paymentMessage: ''));
+    final response =
+        await _createPaymentIntentUseCase(paymentType: PaymentType.cart);
+    if (isClosed) return;
+    response.fold(
+      (failure) => emit(state.copyWith(
+          paymentState: CubitState.failure, paymentMessage: failure.message)),
+      (clientSecret) {
+        if (clientSecret.trim().isEmpty) {
+          emit(state.copyWith(
+              paymentState: CubitState.failure,
+              paymentMessage: 'Unable to start checkout. Please try again.'));
+        } else {
+          emit(state.copyWith(
               paymentClientSecret: clientSecret,
-              paymentState: CubitState.success,
-            ),
-          );
-        },
-      );
+              paymentState: CubitState.success));
+        }
+      },
+    );
   }
 
-  Future<void> editProductQuantity({required productId, required int newQuantity}) async {
-    emit(state.copyWith(paymentState: CubitState.initial));
-      final response = await _editCartProductQuantityUseCase(
-        productId: productId,
-        newQuantity: newQuantity,
-      );
-      response.fold(
-        (failure) => emit(
-          state.copyWith(
-            cartState: CubitState.failure,
-            cartMessage: failure.message,
-          ),
-        ),
-        (cartProducts) => emit(
-          state.copyWith(
-            cart: cartProducts,
-            cartState: CubitState.success,
-          ),
-        ),
-      );
+  Future<void> editProductQuantity(
+      {required String productId, required int newQuantity}) async {
+    if (_busy) return;
+    final products = state.cart.products.where((item) => item.id == productId);
+    if (products.isEmpty) return;
+    final product = products.first;
+    if (newQuantity < 1 ||
+        newQuantity == product.quantity ||
+        (newQuantity > product.quantity && newQuantity > product.stock)) return;
+    emit(state.copyWith(
+        isUpdating: true,
+        cartMessage: '',
+        paymentState: CubitState.initial,
+        paymentClientSecret: ''));
+    final response = await _editCartProductQuantityUseCase(
+        productId: productId, newQuantity: newQuantity);
+    if (isClosed) return;
+    response.fold(
+      (failure) => emit(state.copyWith(
+          isUpdating: false,
+          cartState: CubitState.failure,
+          cartMessage: failure.message)),
+      (cart) => emit(state.copyWith(
+          isUpdating: false, cart: cart, cartState: CubitState.success)),
+    );
   }
-
 
   void updateSelectedColor(String? color) {
     emit(state.copyWith(selectedColor: () => color));
@@ -159,8 +179,8 @@ class CartCubit extends Cubit<CartState> {
   void updateSelectedSize(String? size) {
     emit(state.copyWith(selectedSize: () => size));
   }
+
   void updateSelectedQuantity(int quantity) {
     emit(state.copyWith(selectedQuantity: quantity));
   }
-
 }

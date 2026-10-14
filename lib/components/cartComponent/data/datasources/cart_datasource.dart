@@ -37,7 +37,8 @@ abstract class CartDataSource {
 class CartDataSourceImpl extends CartDataSource {
   final ApiConsumer _apiConsumer;
 
-  CartDataSourceImpl(@Named(ApiConstants.authenticatedConsumer) this._apiConsumer);
+  CartDataSourceImpl(
+      @Named(ApiConstants.authenticatedConsumer) this._apiConsumer);
 
   @override
   Future<CartModel> addProductToCart({
@@ -57,11 +58,12 @@ class CartDataSourceImpl extends CartDataSource {
       requestBody['color'] = productColor;
     }
     final response =
-        await _apiConsumer.post(ApiConstants.cartEndPoint,body: requestBody);
+        await _apiConsumer.post(ApiConstants.cartEndPoint, body: requestBody);
     if (response['status'] == ApiCallStatus.success.value) {
       return CartModel.fromJson(response['data']);
     } else {
-      throw const FetchDataException();
+      throw FetchDataException(
+          response['message'] is String ? response['message'] : null);
     }
   }
 
@@ -70,26 +72,26 @@ class CartDataSourceImpl extends CartDataSource {
     required String productId,
     required int newQuantity,
   }) async {
-    final response =
-        await _apiConsumer.patch(ApiConstants.cartEndPoint, body: {
+    final response = await _apiConsumer.patch(ApiConstants.cartEndPoint, body: {
       'id': productId,
       'quantity': newQuantity,
     });
     if (response['status'] == ApiCallStatus.success.value) {
       return CartModel.fromJson(response['data']);
     } else {
-      throw const FetchDataException();
+      throw FetchDataException(
+          response['message'] is String ? response['message'] : null);
     }
   }
 
   @override
   Future<CartModel> getCartProducts() async {
-    final response =
-        await _apiConsumer.get(ApiConstants.cartEndPoint);
+    final response = await _apiConsumer.get(ApiConstants.cartEndPoint);
     if (response['status'] == ApiCallStatus.success.value) {
       return CartModel.fromJson(response['data']);
     } else {
-      throw const FetchDataException();
+      throw FetchDataException(
+          response['message'] is String ? response['message'] : null);
     }
   }
 
@@ -100,9 +102,10 @@ class CartDataSourceImpl extends CartDataSource {
       'id': productId,
     });
     if (response['status'] == ApiCallStatus.success.value) {
-      return await getCartProducts();
+      return CartModel.fromJson(response['data']);
     } else {
-      throw const FetchDataException();
+      throw FetchDataException(
+          response['message'] is String ? response['message'] : null);
     }
   }
 
@@ -112,21 +115,28 @@ class CartDataSourceImpl extends CartDataSource {
     String? collectionId,
   }) async {
     final response = await _apiConsumer.post(ApiConstants.paymentIntentEndPoint,
-        body: paymentType == PaymentType.collection ? {'collectionId': collectionId} : {},
+        body: paymentType == PaymentType.collection
+            ? {'collectionId': collectionId}
+            : {},
         queryParameters: {
           'type': paymentType == PaymentType.collection ? 'collection' : 'cart'
         });
     if (response['status'] == ApiCallStatus.success.value) {
-      return response['data']['clientSecret'];
+      final secret = response['data']?['clientSecret'];
+      if (secret is! String || secret.trim().isEmpty) {
+        throw const FetchDataException(
+            'Unable to start checkout. Please try again.');
+      }
+      return secret;
     } else {
-      throw const FetchDataException();
+      throw FetchDataException(
+          response['message'] is String ? response['message'] : null);
     }
   }
 
   @override
   Future<List<CartOrderModel>> getOrdersList() async {
-    final response =
-        await _apiConsumer.get(ApiConstants.ordersEndPoint);
+    final response = await _apiConsumer.get(ApiConstants.ordersEndPoint);
     if (response['status'] == ApiCallStatus.success.value) {
       return List<CartOrderModel>.from(
         (response['data'] as List).map(
@@ -134,7 +144,8 @@ class CartDataSourceImpl extends CartDataSource {
         ),
       );
     } else {
-      throw const FetchDataException();
+      throw FetchDataException(
+          response['message'] is String ? response['message'] : null);
     }
   }
 }
