@@ -33,6 +33,31 @@ void main() {
     expect(adapter.requests.single.path, '/product/list');
     expect(adapter.requests.single.queryParameters['categories'], '1,2');
   });
+
+  test('fetches collection banners', () async {
+    final collections = await repository.fetchCollections();
+
+    expect(collections, hasLength(1));
+    expect(collections.single.title, 'Summer');
+    expect(adapter.requests.single.path, '/collection');
+  });
+
+  test('fetches collection items when a banner is opened', () async {
+    final items = await repository.fetchCollectionItems(collectionId: 'summer');
+
+    expect(items, hasLength(1));
+    expect(items.single.title, 'Linen shirt');
+    expect(adapter.requests.single.path, '/collection/summer');
+  });
+
+  test('fetches discounted products for the offers carousel', () async {
+    final offers = await repository.fetchOffers(categoryIds: '1,2');
+
+    expect(offers, hasLength(1));
+    expect(offers.single.oldPrice, '69.99');
+    expect(adapter.requests.single.queryParameters['discount'], true);
+    expect(adapter.requests.single.queryParameters['categories'], '1,2');
+  });
 }
 
 class _FakeAdapter implements HttpClientAdapter {
@@ -46,31 +71,58 @@ class _FakeAdapter implements HttpClientAdapter {
   ) async {
     requests.add(options);
 
-    final Object responseData = options.path == '/category/list'
-        ? {
-            'status': 'success',
-            'data': [
-              {
-                'id': 'women',
-                'name': 'Women',
-                'imageURL': 'https://example.com/category.jpg',
-                'gender': 2,
-              },
-            ],
-          }
-        : {
-            'status': 'success',
-            'data': {
-              'products': [
-                {
-                  'id': 'shirt',
-                  'title': 'Classic shirt',
-                  'imageUrl': 'https://example.com/product.jpg',
-                  'price': 49.99,
-                },
-              ],
+    final Object responseData = switch (options.path) {
+      '/category/list' => {
+        'status': 'success',
+        'data': [
+          {
+            'id': 'women',
+            'name': 'Women',
+            'imageURL': 'https://example.com/category.jpg',
+            'gender': 2,
+          },
+        ],
+      },
+      '/collection' => {
+        'status': 'success',
+        'data': [
+          {
+            'id': 'summer',
+            'title': 'Summer',
+            'description': 'Light looks for warm days.',
+            'price': 120,
+            'discount': 20,
+            'image': 'https://example.com/banner.jpg',
+          },
+        ],
+      },
+      '/collection/summer' => {
+        'status': 'success',
+        'data': {
+          'items': [
+            {
+              'title': 'Linen shirt',
+              'description': 'Breathable summer fabric.',
+              'image': 'https://example.com/linen.jpg',
             },
-          };
+          ],
+        },
+      },
+      _ => {
+        'status': 'success',
+        'data': {
+          'products': [
+            {
+              'id': 'shirt',
+              'title': 'Classic shirt',
+              'imageUrl': 'https://example.com/product.jpg',
+              'price': 49.99,
+              'oldPrice': 69.99,
+            },
+          ],
+        },
+      },
+    };
 
     return ResponseBody.fromString(
       jsonEncode(responseData),

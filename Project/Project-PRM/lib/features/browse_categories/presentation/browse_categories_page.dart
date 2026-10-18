@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../data/category_repository.dart';
 import '../models/category.dart';
+import '../models/collection.dart';
+import '../models/collection_item.dart';
 import '../models/product.dart';
 
 class BrowseCategoriesPage extends StatefulWidget {
@@ -21,19 +24,48 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
   static const _menId = 1;
 
   int _genderId = _allGendersId;
+  List<StoreCollection> _collections = [];
   List<ProductCategory> _categories = [];
   List<StoreProduct> _products = [];
+  List<StoreProduct> _offers = [];
   final Set<String> _selectedCategoryIds = {};
+  int _activeBannerIndex = 0;
+  bool _isLoadingCollections = true;
   bool _isLoadingCategories = true;
   bool _isApplyingFilters = false;
+  bool _isLoadingOffers = true;
+  String? _collectionError;
   String? _categoryError;
   String? _productError;
+  String? _offersError;
 
   @override
   void initState() {
     super.initState();
+    _loadCollections();
     _loadCategories();
     _loadProducts();
+    _loadOffers();
+  }
+
+  Future<void> _loadCollections() async {
+    setState(() {
+      _isLoadingCollections = true;
+      _collectionError = null;
+    });
+
+    try {
+      final collections = await widget.repository.fetchCollections();
+      if (!mounted) return;
+      setState(() {
+        _collections = collections;
+        _isLoadingCollections = false;
+      });
+    } on DioException catch (error) {
+      _setCollectionError(error.message ?? 'Could not connect to the store.');
+    } on FormatException catch (error) {
+      _setCollectionError(error.message);
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -80,6 +112,36 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
     }
   }
 
+  Future<void> _loadOffers({String? categoryIds}) async {
+    setState(() {
+      _isLoadingOffers = true;
+      _offersError = null;
+    });
+
+    try {
+      final offers = await widget.repository.fetchOffers(
+        categoryIds: categoryIds,
+      );
+      if (!mounted) return;
+      setState(() {
+        _offers = offers;
+        _isLoadingOffers = false;
+      });
+    } on DioException catch (error) {
+      _setOffersError(error.message ?? 'Could not connect to the store.');
+    } on FormatException catch (error) {
+      _setOffersError(error.message);
+    }
+  }
+
+  void _setCollectionError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _collectionError = message;
+      _isLoadingCollections = false;
+    });
+  }
+
   void _setCategoryError(String message) {
     if (!mounted) return;
     setState(() {
@@ -93,6 +155,14 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
     setState(() {
       _productError = message;
       _isApplyingFilters = false;
+    });
+  }
+
+  void _setOffersError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _offersError = message;
+      _isLoadingOffers = false;
     });
   }
 
@@ -113,8 +183,12 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
     });
   }
 
-  Future<void> _applyFilters() {
-    return _loadProducts(categoryIds: _selectedCategoryIds.join(','));
+  Future<void> _applyFilters() async {
+    final categoryIds = _selectedCategoryIds.join(',');
+    await Future.wait([
+      _loadProducts(categoryIds: categoryIds),
+      _loadOffers(categoryIds: categoryIds),
+    ]);
   }
 
   @override
@@ -130,16 +204,21 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await _loadCategories();
-          await _loadProducts(
-            categoryIds: _selectedCategoryIds.isEmpty
-                ? null
-                : _selectedCategoryIds.join(','),
-          );
+          final categoryIds = _selectedCategoryIds.isEmpty
+              ? null
+              : _selectedCategoryIds.join(',');
+          await Future.wait([
+            _loadCollections(),
+            _loadCategories(),
+            _loadProducts(categoryIds: categoryIds),
+            _loadOffers(categoryIds: categoryIds),
+          ]);
         },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           children: [
+            _buildCollectionCarousel(theme),
+            const SizedBox(height: 22),
             Text(
               'Browse Product Categories',
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -176,6 +255,8 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
             ),
             const SizedBox(height: 12),
             _buildCategories(theme),
+            const SizedBox(height: 28),
+            _buildOffersCarousel(theme),
             const SizedBox(height: 28),
             Row(
               children: [
@@ -242,6 +323,152 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
           onTap: () => _selectGender(_menId),
         ),
       ],
+    );
+  }
+
+  Widget _buildCollectionCarousel(ThemeData theme) {
+    if (_isLoadingCollections) {
+      return const SizedBox(
+        height: 300,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_collectionError != null) {
+      return _ErrorMessage(
+        message: _collectionError!,
+        onRetry: _loadCollections,
+      );
+    }
+    if (_collections.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 300,
+          child: CarouselSlider.builder(
+            itemCount: _collections.length,
+            itemBuilder: (context, index, realIndex) {
+              final collection = _collections[index];
+              return _CollectionBanner(
+                collection: collection,
+                onTap: () => _showCollectionDetails(collection),
+              );
+            },
+            options: CarouselOptions(
+              height: 300,
+              viewportFraction: 1,
+              autoPlay: _collections.length > 1,
+              autoPlayInterval: const Duration(seconds: 5),
+              onPageChanged: (index, reason) {
+                setState(() => _activeBannerIndex = index);
+              },
+            ),
+          ),
+        ),
+        if (_collections.length > 1) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _collections.length,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: index == _activeBannerIndex ? 24 : 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: index == _activeBannerIndex
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildOffersCarousel(ThemeData theme) {
+    if (_isLoadingOffers && _offers.isEmpty) {
+      return const SizedBox(
+        height: 220,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_offersError != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Offers',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          _ErrorMessage(
+            message: _offersError!,
+            onRetry: () => _loadOffers(
+              categoryIds: _selectedCategoryIds.isEmpty
+                  ? null
+                  : _selectedCategoryIds.join(','),
+            ),
+          ),
+        ],
+      );
+    }
+    if (_offers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Offers',
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const Spacer(),
+            if (_isLoadingOffers)
+              const SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 238,
+          child: CarouselSlider.builder(
+            itemCount: _offers.length,
+            itemBuilder: (context, index, realIndex) =>
+                _OfferCard(product: _offers[index]),
+            options: CarouselOptions(
+              height: 238,
+              viewportFraction: 0.62,
+              enlargeCenterPage: true,
+              enableInfiniteScroll: _offers.length > 1,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showCollectionDetails(StoreCollection collection) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => _CollectionDetailsSheet(
+        repository: widget.repository,
+        collection: collection,
+      ),
     );
   }
 
@@ -312,6 +539,355 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
         childAspectRatio: 0.67,
       ),
       itemBuilder: (context, index) => _ProductCard(product: _products[index]),
+    );
+  }
+}
+
+class _CollectionBanner extends StatelessWidget {
+  const _CollectionBanner({
+    required this.collection,
+    required this.onTap,
+  });
+
+  final StoreCollection collection;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CachedNetworkImage(
+            imageUrl: collection.imageUrl,
+            fit: BoxFit.cover,
+            errorWidget: (context, url, error) => ColoredBox(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: const Icon(Icons.image_not_supported_outlined, size: 42),
+            ),
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [Color(0xCC101820), Color(0x00101820)],
+                stops: [0, 1],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 16, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${collection.discount}% OFF',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  collection.title.toUpperCase(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  collection.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.92),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                FilledButton.icon(
+                  onPressed: onTap,
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                  label: const Text('Shop collection'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OfferCard extends StatelessWidget {
+  const _OfferCard({required this.product});
+
+  final StoreProduct product;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hasDiscount = product.oldPrice != product.price;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      elevation: 0,
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: product.imageUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => ColoredBox(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: const Icon(Icons.image_not_supported_outlined),
+                  ),
+                ),
+                if (hasDiscount)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Text(
+                        'SALE',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (hasDiscount) ...[
+                      Text(
+                        '\$${product.oldPrice}',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.error,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                    ],
+                    Text(
+                      '\$${product.price}',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollectionDetailsSheet extends StatefulWidget {
+  const _CollectionDetailsSheet({
+    required this.repository,
+    required this.collection,
+  });
+
+  final CategoryRepository repository;
+  final StoreCollection collection;
+
+  @override
+  State<_CollectionDetailsSheet> createState() => _CollectionDetailsSheetState();
+}
+
+class _CollectionDetailsSheetState extends State<_CollectionDetailsSheet> {
+  late Future<List<CollectionItem>> _itemsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemsFuture = _loadItems();
+  }
+
+  Future<List<CollectionItem>> _loadItems() {
+    return widget.repository.fetchCollectionItems(
+      collectionId: widget.collection.id,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.78,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.collection.title,
+                    style: theme.textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(widget.collection.description),
+                ],
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<List<CollectionItem>>(
+                future: _itemsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return _ErrorMessage(
+                      message: 'Could not load collection details.',
+                      onRetry: () => setState(() => _itemsFuture = _loadItems()),
+                    );
+                  }
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final items = snapshot.data!;
+                  if (items.isEmpty) {
+                    return const _EmptyMessage(
+                      message: 'This collection has no items yet.',
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    itemCount: items.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return Container(
+                        height: 112,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: theme.colorScheme.outlineVariant,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 104,
+                              height: double.infinity,
+                              child: CachedNetworkImage(
+                                imageUrl: item.imageUrl,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => ColoredBox(
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                  child: const Icon(
+                                    Icons.image_not_supported_outlined,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      item.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      item.description,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
