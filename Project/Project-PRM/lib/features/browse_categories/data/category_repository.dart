@@ -95,6 +95,25 @@ class CategoryRepository {
     return _parseProducts(response.data);
   }
 
+  Future<List<StoreProduct>> fetchDiscoverProducts({
+    required int page,
+    String? categoryIds,
+    String? brandId,
+    bool offersOnly = false,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/product/list',
+      queryParameters: {
+        'page': page,
+        if (offersOnly) 'discount': true,
+        if (brandId != null && brandId.isNotEmpty) 'brands': brandId,
+        if (categoryIds != null && categoryIds.isNotEmpty)
+          'categories': categoryIds,
+      },
+    );
+    return _parseProducts(response.data);
+  }
+
   List<StoreProduct> _parseProducts(Map<String, dynamic>? data) {
     if (data == null ||
         data['status'] != 'success' ||

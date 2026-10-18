@@ -58,6 +58,36 @@ void main() {
     expect(adapter.requests.single.queryParameters['discount'], true);
     expect(adapter.requests.single.queryParameters['categories'], '1,2');
   });
+
+  test('fetches a page of discover products with optional filters', () async {
+    final products = await repository.fetchDiscoverProducts(
+      page: 3,
+      categoryIds: '1,2',
+      brandId: 'brand-7',
+    );
+
+    expect(products, hasLength(1));
+    expect(adapter.requests.single.queryParameters['page'], 3);
+    expect(adapter.requests.single.queryParameters['categories'], '1,2');
+    expect(adapter.requests.single.queryParameters['brands'], 'brand-7');
+    expect(
+      adapter.requests.single.queryParameters.containsKey('discount'),
+      isFalse,
+    );
+  });
+
+  test('fetches a page of discover offers', () async {
+    final products = await repository.fetchDiscoverProducts(
+      page: 2,
+      categoryIds: 'women',
+      offersOnly: true,
+    );
+
+    expect(products, hasLength(1));
+    expect(adapter.requests.single.queryParameters['page'], 2);
+    expect(adapter.requests.single.queryParameters['categories'], 'women');
+    expect(adapter.requests.single.queryParameters['discount'], true);
+  });
 }
 
 class _FakeAdapter implements HttpClientAdapter {

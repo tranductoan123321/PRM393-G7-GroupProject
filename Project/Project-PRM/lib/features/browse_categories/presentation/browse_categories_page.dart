@@ -8,6 +8,7 @@ import '../models/category.dart';
 import '../models/collection.dart';
 import '../models/product.dart';
 import 'collection_details_page.dart';
+import 'discover_products_page.dart';
 
 class BrowseCategoriesPage extends StatefulWidget {
   const BrowseCategoriesPage({required this.repository, super.key});
@@ -269,6 +270,13 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
                   ),
                 ),
                 const Spacer(),
+                TextButton(
+                  onPressed: () => _openDiscoverProducts(
+                    title: 'Discover Products',
+                    offersOnly: false,
+                  ),
+                  child: const Text('See all'),
+                ),
                 if (_isApplyingFilters)
                   const SizedBox.square(
                     dimension: 18,
@@ -434,6 +442,13 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
                   ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const Spacer(),
+            TextButton(
+              onPressed: () => _openDiscoverProducts(
+                title: 'Discover Offers',
+                offersOnly: true,
+              ),
+              child: const Text('See all'),
+            ),
             if (_isLoadingOffers)
               const SizedBox.square(
                 dimension: 16,
@@ -466,6 +481,24 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
         builder: (context) => CollectionDetailsPage(
           repository: widget.repository,
           collection: collection,
+        ),
+      ),
+    );
+  }
+
+  void _openDiscoverProducts({
+    required String title,
+    required bool offersOnly,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => DiscoverProductsPage(
+          repository: widget.repository,
+          title: title,
+          categoryIds: _selectedCategoryIds.isEmpty
+              ? null
+              : _selectedCategoryIds.join(','),
+          offersOnly: offersOnly,
         ),
       ),
     );
