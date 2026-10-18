@@ -88,6 +88,36 @@ void main() {
     expect(adapter.requests.single.queryParameters['categories'], 'women');
     expect(adapter.requests.single.queryParameters['discount'], true);
   });
+
+  test('fetches brands for search filters', () async {
+    final brands = await repository.fetchBrands();
+
+    expect(brands, hasLength(1));
+    expect(brands.single.name, 'Studio');
+    expect(adapter.requests.single.path, '/brand/list');
+  });
+
+  test('searches products by keyword and filters', () async {
+    final products = await repository.searchProducts(
+      query: 'linen shirt',
+      page: 2,
+      categoryIds: 'women,shirts',
+      brandIds: 'studio',
+      minPrice: 200,
+      maxPrice: 800,
+    );
+
+    expect(products, hasLength(1));
+    expect(adapter.requests.single.path, '/product/list');
+    expect(adapter.requests.single.queryParameters, {
+      'page': 2,
+      'search': 'linen shirt',
+      'categories': 'women,shirts',
+      'brands': 'studio',
+      'min-price': 200,
+      'max-price': 800,
+    });
+  });
 }
 
 class _FakeAdapter implements HttpClientAdapter {
@@ -111,6 +141,12 @@ class _FakeAdapter implements HttpClientAdapter {
             'imageURL': 'https://example.com/category.jpg',
             'gender': 2,
           },
+        ],
+      },
+      '/brand/list' => {
+        'status': 'success',
+        'data': [
+          {'id': 'studio', 'name': 'Studio'},
         ],
       },
       '/collection' => {

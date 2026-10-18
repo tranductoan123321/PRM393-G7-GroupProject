@@ -9,6 +9,7 @@ import '../models/collection.dart';
 import '../models/product.dart';
 import 'collection_details_page.dart';
 import 'discover_products_page.dart';
+import 'keyword_product_search_page.dart';
 
 class BrowseCategoriesPage extends StatefulWidget {
   const BrowseCategoriesPage({required this.repository, super.key});
@@ -202,6 +203,13 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
         centerTitle: false,
         backgroundColor: theme.scaffoldBackgroundColor,
         scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Search products',
+            onPressed: _openKeywordSearch,
+            icon: const Icon(Icons.search_rounded),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -499,6 +507,16 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
               ? null
               : _selectedCategoryIds.join(','),
           offersOnly: offersOnly,
+        ),
+      ),
+    );
+  }
+
+  void _openKeywordSearch() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => KeywordProductSearchPage(
+          repository: widget.repository,
         ),
       ),
     );

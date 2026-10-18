@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../models/brand.dart';
 import '../models/category.dart';
 import '../models/collection.dart';
 import '../models/collection_item.dart';
@@ -9,6 +10,22 @@ class CategoryRepository {
   const CategoryRepository(this._dio);
 
   final Dio _dio;
+
+  Future<List<ProductBrand>> fetchBrands() async {
+    final response = await _dio.get<Map<String, dynamic>>('/brand/list');
+    final data = response.data;
+
+    if (data == null || data['status'] != 'success' || data['data'] is! List) {
+      throw const FormatException('Could not load product brands.');
+    }
+
+    return (data['data'] as List)
+        .map(
+          (item) =>
+              ProductBrand.fromJson(Map<String, dynamic>.from(item as Map)),
+        )
+        .toList();
+  }
 
   Future<List<StoreCollection>> fetchCollections() async {
     final response = await _dio.get<Map<String, dynamic>>('/collection');
@@ -20,9 +37,8 @@ class CategoryRepository {
 
     return (data['data'] as List)
         .map(
-          (item) => StoreCollection.fromJson(
-            Map<String, dynamic>.from(item as Map),
-          ),
+          (item) =>
+              StoreCollection.fromJson(Map<String, dynamic>.from(item as Map)),
         )
         .toList();
   }
@@ -30,8 +46,9 @@ class CategoryRepository {
   Future<List<CollectionItem>> fetchCollectionItems({
     required String collectionId,
   }) async {
-    final response =
-        await _dio.get<Map<String, dynamic>>('/collection/$collectionId');
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/collection/$collectionId',
+    );
     final data = response.data;
 
     if (data == null ||
@@ -43,9 +60,8 @@ class CategoryRepository {
 
     return ((data['data'] as Map)['items'] as List)
         .map(
-          (item) => CollectionItem.fromJson(
-            Map<String, dynamic>.from(item as Map),
-          ),
+          (item) =>
+              CollectionItem.fromJson(Map<String, dynamic>.from(item as Map)),
         )
         .toList();
   }
@@ -69,17 +85,14 @@ class CategoryRepository {
     );
     final data = response.data;
 
-    if (data == null ||
-        data['status'] != 'success' ||
-        data['data'] is! List) {
+    if (data == null || data['status'] != 'success' || data['data'] is! List) {
       throw const FormatException('Could not load product categories.');
     }
 
     return (data['data'] as List)
         .map(
-          (item) => ProductCategory.fromJson(
-            Map<String, dynamic>.from(item as Map),
-          ),
+          (item) =>
+              ProductCategory.fromJson(Map<String, dynamic>.from(item as Map)),
         )
         .toList();
   }
@@ -114,6 +127,39 @@ class CategoryRepository {
     return _parseProducts(response.data);
   }
 
+  Future<List<StoreProduct>> searchProducts({
+    required String query,
+    required int page,
+    String? categoryIds,
+    String? brandIds,
+    int? minPrice,
+    int? maxPrice,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/product/list',
+      queryParameters: {
+        'page': page,
+        'search': query,
+        ..._optionalParameters({
+          'categories': categoryIds,
+          'brands': brandIds,
+          'min-price': minPrice,
+          'max-price': maxPrice,
+        }),
+      },
+    );
+    return _parseProducts(response.data);
+  }
+
+  Map<String, Object> _optionalParameters(Map<String, Object?> parameters) {
+    return {
+      for (final entry in parameters.entries)
+        if (entry.value != null &&
+            (entry.value is! String || (entry.value as String).isNotEmpty))
+          entry.key: entry.value!,
+    };
+  }
+
   List<StoreProduct> _parseProducts(Map<String, dynamic>? data) {
     if (data == null ||
         data['status'] != 'success' ||
@@ -124,9 +170,8 @@ class CategoryRepository {
 
     return ((data['data'] as Map)['products'] as List)
         .map(
-          (item) => StoreProduct.fromJson(
-            Map<String, dynamic>.from(item as Map),
-          ),
+          (item) =>
+              StoreProduct.fromJson(Map<String, dynamic>.from(item as Map)),
         )
         .toList();
   }
