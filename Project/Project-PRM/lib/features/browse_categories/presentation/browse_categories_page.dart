@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import '../data/category_repository.dart';
 import '../models/category.dart';
 import '../models/collection.dart';
-import '../models/collection_item.dart';
 import '../models/product.dart';
+import 'collection_details_page.dart';
 
 class BrowseCategoriesPage extends StatefulWidget {
   const BrowseCategoriesPage({required this.repository, super.key});
@@ -460,14 +460,13 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
     );
   }
 
-  Future<void> _showCollectionDetails(StoreCollection collection) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (context) => _CollectionDetailsSheet(
-        repository: widget.repository,
-        collection: collection,
+  void _showCollectionDetails(StoreCollection collection) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => CollectionDetailsPage(
+          repository: widget.repository,
+          collection: collection,
+        ),
       ),
     );
   }
@@ -738,155 +737,6 @@ class _OfferCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CollectionDetailsSheet extends StatefulWidget {
-  const _CollectionDetailsSheet({
-    required this.repository,
-    required this.collection,
-  });
-
-  final CategoryRepository repository;
-  final StoreCollection collection;
-
-  @override
-  State<_CollectionDetailsSheet> createState() => _CollectionDetailsSheetState();
-}
-
-class _CollectionDetailsSheetState extends State<_CollectionDetailsSheet> {
-  late Future<List<CollectionItem>> _itemsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _itemsFuture = _loadItems();
-  }
-
-  Future<List<CollectionItem>> _loadItems() {
-    return widget.repository.fetchCollectionItems(
-      collectionId: widget.collection.id,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.78,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.collection.title,
-                    style: theme.textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(widget.collection.description),
-                ],
-              ),
-            ),
-            Expanded(
-              child: FutureBuilder<List<CollectionItem>>(
-                future: _itemsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return _ErrorMessage(
-                      message: 'Could not load collection details.',
-                      onRetry: () => setState(() => _itemsFuture = _loadItems()),
-                    );
-                  }
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final items = snapshot.data!;
-                  if (items.isEmpty) {
-                    return const _EmptyMessage(
-                      message: 'This collection has no items yet.',
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    itemCount: items.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      return Container(
-                        height: 112,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: theme.colorScheme.outlineVariant,
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 104,
-                              height: double.infinity,
-                              child: CachedNetworkImage(
-                                imageUrl: item.imageUrl,
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => ColoredBox(
-                                  color:
-                                      theme.colorScheme.surfaceContainerHighest,
-                                  child: const Icon(
-                                    Icons.image_not_supported_outlined,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      item.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.titleSmall
-                                          ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      item.description,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
