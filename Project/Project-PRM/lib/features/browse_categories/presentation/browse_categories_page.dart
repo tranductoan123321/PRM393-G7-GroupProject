@@ -1,0 +1,532 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+
+import '../data/category_repository.dart';
+import '../models/category.dart';
+import '../models/product.dart';
+
+class BrowseCategoriesPage extends StatefulWidget {
+  const BrowseCategoriesPage({required this.repository, super.key});
+
+  final CategoryRepository repository;
+
+  @override
+  State<BrowseCategoriesPage> createState() => _BrowseCategoriesPageState();
+}
+
+class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
+  static const _allGendersId = 0;
+  static const _womenId = 2;
+  static const _menId = 1;
+
+  int _genderId = _allGendersId;
+  List<ProductCategory> _categories = [];
+  List<StoreProduct> _products = [];
+  final Set<String> _selectedCategoryIds = {};
+  bool _isLoadingCategories = true;
+  bool _isApplyingFilters = false;
+  String? _categoryError;
+  String? _productError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+    _loadProducts();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+      _categoryError = null;
+    });
+
+    try {
+      final categories = await widget.repository.fetchCategories(
+        genderId: _genderId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _categories = categories;
+        _isLoadingCategories = false;
+      });
+    } on DioException catch (error) {
+      _setCategoryError(error.message ?? 'Could not connect to the store.');
+    } on FormatException catch (error) {
+      _setCategoryError(error.message);
+    }
+  }
+
+  Future<void> _loadProducts({String? categoryIds}) async {
+    setState(() {
+      _isApplyingFilters = true;
+      _productError = null;
+    });
+
+    try {
+      final products = await widget.repository.fetchProducts(
+        categoryIds: categoryIds,
+      );
+      if (!mounted) return;
+      setState(() {
+        _products = products;
+        _isApplyingFilters = false;
+      });
+    } on DioException catch (error) {
+      _setProductError(error.message ?? 'Could not connect to the store.');
+    } on FormatException catch (error) {
+      _setProductError(error.message);
+    }
+  }
+
+  void _setCategoryError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _categoryError = message;
+      _isLoadingCategories = false;
+    });
+  }
+
+  void _setProductError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _productError = message;
+      _isApplyingFilters = false;
+    });
+  }
+
+  void _selectGender(int genderId) {
+    if (_genderId == genderId) return;
+    setState(() {
+      _genderId = genderId;
+      _selectedCategoryIds.clear();
+    });
+    _loadCategories();
+  }
+
+  void _toggleCategory(String categoryId) {
+    setState(() {
+      if (!_selectedCategoryIds.add(categoryId)) {
+        _selectedCategoryIds.remove(categoryId);
+      }
+    });
+  }
+
+  Future<void> _applyFilters() {
+    return _loadProducts(categoryIds: _selectedCategoryIds.join(','));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('eFashion'),
+        centerTitle: false,
+        backgroundColor: theme.scaffoldBackgroundColor,
+        scrolledUnderElevation: 0,
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _loadCategories();
+          await _loadProducts(
+            categoryIds: _selectedCategoryIds.isEmpty
+                ? null
+                : _selectedCategoryIds.join(','),
+          );
+        },
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          children: [
+            Text(
+              'Browse Product Categories',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Choose a category to find something you love.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildGenderSelector(theme),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Text(
+                  'Categories',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                if (_selectedCategoryIds.isNotEmpty)
+                  Text(
+                    '${_selectedCategoryIds.length} selected',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildCategories(theme),
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                Text(
+                  _selectedCategoryIds.isEmpty
+                      ? 'Products'
+                      : 'Filtered products',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                if (_isApplyingFilters)
+                  const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildProducts(theme),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _selectedCategoryIds.isEmpty
+          ? null
+          : SafeArea(
+              minimum: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: FilledButton.icon(
+                onPressed: _isApplyingFilters ? null : _applyFilters,
+                icon: const Icon(Icons.filter_alt_outlined),
+                label: Text(
+                  'Apply ${_selectedCategoryIds.length} '
+                  '${_selectedCategoryIds.length == 1 ? 'category' : 'categories'}',
+                ),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+              ),
+            ),
+    );
+  }
+
+  Widget _buildGenderSelector(ThemeData theme) {
+    return Wrap(
+      spacing: 10,
+      children: [
+        _GenderChip(
+          label: 'All',
+          icon: Icons.grid_view_rounded,
+          selected: _genderId == _allGendersId,
+          onTap: () => _selectGender(_allGendersId),
+        ),
+        _GenderChip(
+          label: 'Women',
+          icon: Icons.woman_rounded,
+          selected: _genderId == _womenId,
+          onTap: () => _selectGender(_womenId),
+        ),
+        _GenderChip(
+          label: 'Men',
+          icon: Icons.man_rounded,
+          selected: _genderId == _menId,
+          onTap: () => _selectGender(_menId),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategories(ThemeData theme) {
+    if (_isLoadingCategories) {
+      return const SizedBox(
+        height: 132,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_categoryError != null) {
+      return _ErrorMessage(message: _categoryError!, onRetry: _loadCategories);
+    }
+    if (_categories.isEmpty) {
+      return const _EmptyMessage(message: 'No categories found.');
+    }
+
+    return SizedBox(
+      height: 132,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final category = _categories[index];
+          final isSelected = _selectedCategoryIds.contains(category.id);
+          return _CategoryCard(
+            category: category,
+            selected: isSelected,
+            onTap: () => _toggleCategory(category.id),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProducts(ThemeData theme) {
+    if (_productError != null) {
+      return _ErrorMessage(
+        message: _productError!,
+        onRetry: () => _loadProducts(
+          categoryIds: _selectedCategoryIds.isEmpty
+              ? null
+              : _selectedCategoryIds.join(','),
+        ),
+      );
+    }
+    if (_isApplyingFilters && _products.isEmpty) {
+      return const SizedBox(
+        height: 140,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_products.isEmpty) {
+      return const _EmptyMessage(
+        message: 'No products found for this selection.',
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _products.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.67,
+      ),
+      itemBuilder: (context, index) => _ProductCard(product: _products[index]),
+    );
+  }
+}
+
+class _GenderChip extends StatelessWidget {
+  const _GenderChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      avatar: Icon(icon, size: 18),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      showCheckmark: false,
+      labelStyle: TextStyle(
+        color: selected ? Colors.white : null,
+        fontWeight: FontWeight.w600,
+      ),
+      selectedColor: Theme.of(context).colorScheme.primary,
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({
+    required this.category,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ProductCategory category;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 104,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant,
+              width: selected ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: SizedBox.expand(
+                        child: CachedNetworkImage(
+                          imageUrl: category.imageUrl,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, url, error) => ColoredBox(
+                            color: colorScheme.surfaceContainerHighest,
+                            child: Icon(
+                              Icons.checkroom_outlined,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (selected)
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Icon(
+                          Icons.check_circle,
+                          color: colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 7),
+              Text(
+                category.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductCard extends StatelessWidget {
+  const _ProductCard({required this.product});
+
+  final StoreProduct product;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SizedBox.expand(
+              child: CachedNetworkImage(
+                imageUrl: product.imageUrl,
+                fit: BoxFit.cover,
+                errorWidget: (context, url, error) => ColoredBox(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: const Icon(Icons.image_not_supported_outlined),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  product.price,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorMessage extends StatelessWidget {
+  const _ErrorMessage({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        children: [
+          Text(message, textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try again'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyMessage extends StatelessWidget {
+  const _EmptyMessage({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 30),
+      child: Center(child: Text(message)),
+    );
+  }
+}
