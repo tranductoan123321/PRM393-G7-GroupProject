@@ -3,6 +3,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../account/data/account_repository.dart';
+import '../../account/presentation/account_page.dart';
 import '../data/category_repository.dart';
 import '../models/category.dart';
 import '../models/collection.dart';
@@ -12,9 +14,14 @@ import 'discover_products_page.dart';
 import 'keyword_product_search_page.dart';
 
 class BrowseCategoriesPage extends StatefulWidget {
-  const BrowseCategoriesPage({required this.repository, super.key});
+  const BrowseCategoriesPage({
+    required this.repository,
+    required this.accountRepository,
+    super.key,
+  });
 
   final CategoryRepository repository;
+  final AccountRepository accountRepository;
 
   @override
   State<BrowseCategoriesPage> createState() => _BrowseCategoriesPageState();
@@ -204,6 +211,16 @@ class _BrowseCategoriesPageState extends State<BrowseCategoriesPage> {
         backgroundColor: theme.scaffoldBackgroundColor,
         scrolledUnderElevation: 0,
         actions: [
+          IconButton(
+            tooltip: 'My account',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) =>
+                    AccountPage(repository: widget.accountRepository),
+              ),
+            ),
+            icon: const Icon(Icons.account_circle_outlined),
+          ),
           IconButton(
             tooltip: 'Search products',
             onPressed: _openKeywordSearch,

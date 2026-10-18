@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import 'features/account/data/account_repository.dart';
+import 'features/account/data/secure_token_store.dart';
 import 'features/browse_categories/data/category_repository.dart';
 import 'features/browse_categories/presentation/browse_categories_page.dart';
 
@@ -13,14 +15,25 @@ void main() {
       headers: const {'Content-Type': 'application/json'},
     ),
   );
+  final accountRepository = AccountRepository(dio, SecureTokenStore());
 
-  runApp(ProjectPrmApp(repository: CategoryRepository(dio)));
+  runApp(
+    ProjectPrmApp(
+      repository: CategoryRepository(dio),
+      accountRepository: accountRepository,
+    ),
+  );
 }
 
 class ProjectPrmApp extends StatelessWidget {
-  const ProjectPrmApp({required this.repository, super.key});
+  const ProjectPrmApp({
+    required this.repository,
+    required this.accountRepository,
+    super.key,
+  });
 
   final CategoryRepository repository;
+  final AccountRepository accountRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +50,10 @@ class ProjectPrmApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF8F8F6),
         useMaterial3: true,
       ),
-      home: BrowseCategoriesPage(repository: repository),
+      home: BrowseCategoriesPage(
+        repository: repository,
+        accountRepository: accountRepository,
+      ),
     );
   }
 }
