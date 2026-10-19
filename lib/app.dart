@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:efashion_flutter/app_routes_observer.dart';
 import 'package:efashion_flutter/presentation/shared/bloc/notifications_cubit/notifications_cubit.dart';
 import 'package:efashion_flutter/core/router/app_router.dart';
@@ -44,3 +44,5 @@ class EfashionApp extends StatelessWidget {
     );
   }
 }
+// [TinhLH] implemented logout logic
+// [TinhLH] implemented logout logic

@@ -1,4 +1,4 @@
-
+﻿
 import 'package:efashion_flutter/components/authComponent/domain/repositories/auth_repository.dart';
 import 'package:injectable/injectable.dart';
 
@@ -12,3 +12,5 @@ class DeleteTokensUseCase{
     return await _authRepository.deleteTokens();
   }
 }
+// [TinhLH] implemented logout logic
+// [TinhLH] implemented logout logic

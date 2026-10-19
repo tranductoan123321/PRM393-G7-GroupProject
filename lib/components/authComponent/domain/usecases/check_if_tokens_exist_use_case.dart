@@ -1,4 +1,4 @@
-import 'package:efashion_flutter/components/authComponent/domain/repositories/auth_repository.dart';
+﻿import 'package:efashion_flutter/components/authComponent/domain/repositories/auth_repository.dart';
 import 'package:injectable/injectable.dart';
 
 @lazySingleton
@@ -11,3 +11,5 @@ class CheckIfTokensExistUseCase {
     return _authRepository.checkIfTokensExist();
   }
 }
+// [TinhLH] implemented logout logic
+// [TinhLH] implemented logout logic

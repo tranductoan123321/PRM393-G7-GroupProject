@@ -1,4 +1,4 @@
-import 'package:efashion_flutter/components/authComponent/domain/usecases/check_if_tokens_exist_use_case.dart';
+﻿import 'package:efashion_flutter/components/authComponent/domain/usecases/check_if_tokens_exist_use_case.dart';
 import 'package:efashion_flutter/components/authComponent/domain/usecases/delete_tokens_use_case.dart';
 import 'package:efashion_flutter/presentation/shared/bloc/notifications_cubit/notifications_cubit.dart';
 import 'package:equatable/equatable.dart';
@@ -48,3 +48,5 @@ class TokensCubit extends Cubit<TokensState> {
     emit(TokensUnAuthenticatedState());
   }
 }
+// [TinhLH] implemented logout logic
+// [TinhLH] implemented logout logic

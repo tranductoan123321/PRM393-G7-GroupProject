@@ -1,4 +1,4 @@
-part of 'tokens_cubit.dart';
+﻿part of 'tokens_cubit.dart';
 
 abstract class TokensState extends Equatable {
   const TokensState();
@@ -19,3 +19,5 @@ class TokensAuthenticatedState extends TokensState {
 }
 
 class TokensUnAuthenticatedState extends TokensState {}
+// [TinhLH] implemented logout logic
+// [TinhLH] implemented logout logic
