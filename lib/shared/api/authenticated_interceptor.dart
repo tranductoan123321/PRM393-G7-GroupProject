@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:efashion_flutter/components/authComponent/domain/usecases/get_user_access_token_usecase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
@@ -35,3 +35,4 @@ class AuthenticatedInterceptor extends Interceptor{
     super.onError(err, handler);
   }
 }
+// [TinhLH] implemented login logic

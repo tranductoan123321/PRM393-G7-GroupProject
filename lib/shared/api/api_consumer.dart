@@ -1,4 +1,4 @@
-abstract class ApiConsumer {
+﻿abstract class ApiConsumer {
   Future<dynamic> get(
     String endPointPath, {
     Map<String, dynamic>? queryParameters,
@@ -33,3 +33,4 @@ abstract class ApiConsumer {
     Map<String, dynamic>? queryParameters,
   });
 }
+// [TinhLH] implemented login logic

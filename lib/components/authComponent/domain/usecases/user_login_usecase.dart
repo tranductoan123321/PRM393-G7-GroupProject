@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:efashion_flutter/components/authComponent/domain/repositories/auth_repository.dart';
 import 'package:efashion_flutter/components/authComponent/domain/entities/tokens.dart';
@@ -13,3 +13,4 @@ class UserLoginUseCase{
     return await authRepository.userLogin(email: email, password: password);
   }
 }
+// [TinhLH] implemented login logic

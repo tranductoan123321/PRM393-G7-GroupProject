@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+﻿import 'package:equatable/equatable.dart';
 
 class Tokens extends Equatable{
   final String accessToken;
@@ -9,3 +9,4 @@ class Tokens extends Equatable{
   @override
   List<Object?> get props => [accessToken, refreshToken, timeStamp];
 }
+// [TinhLH] implemented login logic

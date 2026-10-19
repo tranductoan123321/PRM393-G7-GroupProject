@@ -1,4 +1,4 @@
-part of 'login_cubit.dart';
+﻿part of 'login_cubit.dart';
 
 abstract class LoginState extends Equatable {
   const LoginState();
@@ -23,3 +23,4 @@ class LoginSuccessState extends LoginState  {
   @override
   List<Object> get props => [authTokens];
 }
+// [TinhLH] implemented login logic

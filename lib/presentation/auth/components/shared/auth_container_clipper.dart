@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class AuthContainerClipper extends CustomClipper<Path> {
   @override
@@ -20,3 +20,4 @@ class AuthContainerClipper extends CustomClipper<Path> {
     return true;
   }
 }
+// [TinhLH] implemented login logic

@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
 @lazySingleton
@@ -12,3 +12,4 @@ class DioLogInterceptor extends LogInterceptor{
   @override
   bool get responseBody => true;
 }
+// [TinhLH] implemented login logic

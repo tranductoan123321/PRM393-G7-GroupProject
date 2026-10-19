@@ -1,4 +1,4 @@
-
+﻿
 import 'package:efashion_flutter/components/authComponent/domain/entities/tokens.dart';
 import 'package:hive/hive.dart';
 
@@ -52,3 +52,4 @@ class TokensModel extends HiveObject{
     );
   }
 }
+// [TinhLH] implemented login logic
