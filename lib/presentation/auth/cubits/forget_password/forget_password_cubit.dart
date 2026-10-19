@@ -1,4 +1,4 @@
-import 'package:efashion_flutter/components/authComponent/domain/usecases/forget_password_usecase.dart';
+﻿import 'package:efashion_flutter/components/authComponent/domain/usecases/forget_password_usecase.dart';
 import 'package:efashion_flutter/components/authComponent/domain/usecases/reset_password_usecase.dart';
 import 'package:efashion_flutter/components/authComponent/domain/usecases/verify_otp_usecase.dart';
 import 'package:equatable/equatable.dart';
@@ -70,3 +70,4 @@ class ForgetPasswordCubit extends Cubit<ForgetPasswordState> {
     );
   }
 }
+// [TinhLH] implemented logic

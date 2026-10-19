@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/brand.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/category.dart';
 import 'package:efashion_flutter/injection_container.dart';
@@ -282,3 +282,4 @@ class FavoriteTab extends AutoRouter {
 class AccountTab extends AutoRouter {
   const AccountTab({super.key});
 }
+// [TinhLH] implemented logic

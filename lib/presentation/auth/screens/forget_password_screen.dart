@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:efashion_flutter/presentation/auth/cubits/forget_password/forget_password_cubit.dart';
 import 'package:efashion_flutter/presentation/shared/widgets/custom_snack_bar.dart';
 import 'package:efashion_flutter/core/router/app_router.dart';
@@ -142,3 +142,4 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
     super.dispose();
   }
 }
+// [TinhLH] implemented logic

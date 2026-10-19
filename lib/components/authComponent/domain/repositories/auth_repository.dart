@@ -1,4 +1,4 @@
-import 'package:efashion_flutter/shared/error/failure.dart';
+﻿import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/authComponent/domain/entities/tokens.dart';
 
@@ -41,3 +41,4 @@ abstract class AuthRepository {
     required String confirmNewPassword,
   });
 }
+// [TinhLH] implemented logic

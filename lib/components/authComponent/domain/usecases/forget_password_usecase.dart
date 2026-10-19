@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/authComponent/domain/repositories/auth_repository.dart';
 import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:injectable/injectable.dart';
@@ -12,3 +12,4 @@ class ForgetPasswordUseCase{
     return await _authRepository.forgetPassword(email: email);
   }
 }
+// [TinhLH] implemented logic

@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/authComponent/data/datasources/local/auth_local_data_source.dart';
 import 'package:efashion_flutter/shared/error/exception.dart';
 import 'package:efashion_flutter/shared/error/failure.dart';
@@ -122,3 +122,4 @@ class AuthRepositoryImpl extends AuthRepository {
     }
   }
 }
+// [TinhLH] implemented logic

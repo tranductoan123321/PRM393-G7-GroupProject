@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:efashion_flutter/presentation/auth/components/forget_password/otp_timer.dart';
 import 'package:efashion_flutter/presentation/auth/cubits/forget_password/forget_password_cubit.dart';
 import 'package:efashion_flutter/presentation/shared/widgets/custom_snack_bar.dart';
@@ -138,3 +138,4 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     );
   }
 }
+// [TinhLH] implemented logic

@@ -1,4 +1,4 @@
-part of 'forget_password_cubit.dart';
+﻿part of 'forget_password_cubit.dart';
 
 abstract class ForgetPasswordState extends Equatable {
   const ForgetPasswordState();
@@ -55,3 +55,4 @@ class ResetPasswordFailState extends ForgetPasswordState {
   @override
   List<Object> get props => [message];
 }
+// [TinhLH] implemented logic
