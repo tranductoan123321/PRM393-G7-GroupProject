@@ -15,6 +15,7 @@ part 'favorite_state.dart';
 
 @injectable
 class FavoriteCubit extends Cubit<FavoriteState> {
+  final Set<String> _pendingProducts = {};
   final GetUserFavoriteProductsIdsUseCase _getUserFavoriteProductsIdsUseCase;
   final AddProductToFavoriteListUseCase _addProductToFavoriteListUseCase;
   final RemoveProductFromFavoriteListUseCase
@@ -32,49 +33,60 @@ class FavoriteCubit extends Cubit<FavoriteState> {
 
   Future<void> getUserFavoriteIdList() async {
     emit(state.copyWith(favoriteListState: CubitState.loading));
-      final response = await _getUserFavoriteProductsIdsUseCase();
-      response.fold(
-        (failure) => emit(
-          state.copyWith(
-            favoriteListState: CubitState.failure,
-          ),
+    final response = await _getUserFavoriteProductsIdsUseCase();
+    await response.fold<Future<void>>(
+      (failure) async => emit(
+        state.copyWith(
+          favoriteListState: CubitState.failure,
+          favoriteListFailMessage: failure.message,
         ),
-        (favoriteIds) {
-          emit(
-            state.copyWith(favoritesIds: favoriteIds),
-          );
-          _getFavoriteProductsList();
-        },
-      );
+      ),
+      (favoriteIds) async {
+        emit(state.copyWith(favoritesIds: favoriteIds));
+        await _getFavoriteProductsList();
+      },
+    );
   }
 
-  Future<void> addOrRemoveProductFromFavoriteListEvent({required String productId}) async {
+  Future<void> addOrRemoveProductFromFavoriteListEvent({
+    required String productId,
+  }) async {
+    if (!_pendingProducts.add(productId)) return;
+    emit(state.copyWith(addOrRemoveFromFavoriteFailMessage: ''));
+    try {
       if (state.favoritesIds.contains(productId)) {
-        final response = await _removeProductFromFavoriteListUseCase(productId: productId);
-        response.fold(
-          (failure) => emit(state.copyWith(addOrRemoveFromFavoriteFailMessage: failure.message)),
-          (removeMessage) => _removeFavoriteFromSetAndList(productId: productId),
+        final response = await _removeProductFromFavoriteListUseCase(
+          productId: productId,
+        );
+        await response.fold<Future<void>>(
+          (failure) async => emit(
+            state.copyWith(addOrRemoveFromFavoriteFailMessage: failure.message),
+          ),
+          (removeMessage) async =>
+              _removeFavoriteFromSetAndList(productId: productId),
         );
       } else {
         final response = await _addProductToFavoriteListUseCase(
           productId: productId,
         );
-        response.fold(
-            (failure) => emit(state.copyWith(addOrRemoveFromFavoriteFailMessage: failure.message)),
-            (favoriteIdsList) {
-          emit(
-            state.copyWith(favoritesIds: favoriteIdsList),
-          );
-          _addFavoriteToList(productId: productId);
-        });
+        await response.fold<Future<void>>(
+          (failure) async => emit(
+            state.copyWith(addOrRemoveFromFavoriteFailMessage: failure.message),
+          ),
+          (favoriteIdsList) async {
+            emit(state.copyWith(favoritesIds: favoriteIdsList));
+            await _addFavoriteToList(productId: productId);
+          },
+        );
       }
+    } finally {
+      _pendingProducts.remove(productId);
+    }
   }
 
   Future<void> _getFavoriteProductsList() async {
     final Either<Failure, List<ProductDetails>> favoriteProducts =
-        await _getFavoriteProductsUseCase(
-      favoriteIds: state.favoritesIds,
-    );
+        await _getFavoriteProductsUseCase(favoriteIds: state.favoritesIds);
     favoriteProducts.fold(
       (failure) => emit(
         state.copyWith(
@@ -91,8 +103,9 @@ class FavoriteCubit extends Cubit<FavoriteState> {
     );
   }
 
-  Future<void> _removeFavoriteFromSetAndList(
-      {required String productId}) async {
+  Future<void> _removeFavoriteFromSetAndList({
+    required String productId,
+  }) async {
     final Set<String> favoriteIdList = state.favoritesIds.toSet();
     favoriteIdList.remove(productId);
     emit(state.copyWith(favoritesIds: favoriteIdList));
@@ -102,14 +115,18 @@ class FavoriteCubit extends Cubit<FavoriteState> {
   }
 
   Future<void> _addFavoriteToList({required String productId}) async {
-    final List<ProductDetails> favoriteList = state.favoriteList.toList();
-    final productDetails =
-        await _getProductDetailsUseCase(productId: productId);
+    final productDetails = await _getProductDetailsUseCase(
+      productId: productId,
+    );
     productDetails.fold(
-      (l) => null,
+      (failure) => emit(
+        state.copyWith(addOrRemoveFromFavoriteFailMessage: failure.message),
+      ),
       (product) => emit(
         state.copyWith(
-          favoriteList: List.from(favoriteList)..add(product),
+          favoriteList: List<ProductDetails>.from(
+            state.favoriteList.where((item) => item.id != productId),
+          )..add(product),
         ),
       ),
     );

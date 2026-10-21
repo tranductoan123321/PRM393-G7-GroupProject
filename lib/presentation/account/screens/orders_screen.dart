@@ -22,6 +22,7 @@ class OrdersScreen extends StatefulWidget implements AutoRouteWrapper {
       child: this,
     );
   }
+
   @override
   State<OrdersScreen> createState() => _OrdersScreenState();
 }
@@ -43,9 +44,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
             Expanded(
               child: BlocConsumer<OrdersCubit, OrdersState>(
                 listener: (context, state) {
-                  if(state.ordersState == CubitState.loading){
+                  if (state.ordersState == CubitState.loading) {
                     isLoading = true;
-                  }else{
+                  } else {
                     isLoading = false;
                   }
                 },
@@ -59,17 +60,73 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     );
                   } else {
                     return ListView.builder(
-                      itemCount: state.ordersState == CubitState.loading ? 5 : state.orders.length,
+                      itemCount: state.ordersState == CubitState.loading
+                          ? 5
+                          : state.orders.length,
                       itemBuilder: (context, index) {
-                        if (state.ordersState == CubitState.initial || state.ordersState == CubitState.loading) {
+                        if (state.ordersState == CubitState.initial ||
+                            state.ordersState == CubitState.loading) {
                           return const ShimmerLoadingOrderStatusCard();
                         } else {
                           return CustomFadeAnimation(
                             duration: const Duration(milliseconds: 500),
-                            child: OrderStatusCard(
-                              orderId: state.orders[index].id,
-                              orderCost: state.orders[index].totalPrice,
-                              orderStatus: state.orders[index].status,
+                            child: InkWell(
+                              onTap: () {
+                                final order = state.orders[index];
+                                showModalBottomSheet<void>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (context) => SafeArea(
+                                    child: SingleChildScrollView(
+                                      padding: const EdgeInsets.all(24),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            StringsManager.orderReceiptTitle,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.headlineSmall,
+                                          ),
+                                          const SizedBox(height: 24),
+                                          SelectableText(
+                                            'Order ID: ${order.id}',
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text('Items: ${order.totalQuantity}'),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            'Total: ${StringsManager.currencySign}${order.totalPrice}',
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            order.status == 1
+                                                ? StringsManager.orderInItsWay
+                                                : order.status == 2
+                                                    ? StringsManager
+                                                        .orderInProgress
+                                                    : StringsManager
+                                                        .orderDelivered,
+                                          ),
+                                          const SizedBox(height: 24),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: OrderStatusCard(
+                                orderId: state.orders[index].id,
+                                orderCost: state.orders[index].totalPrice,
+                                orderStatus: state.orders[index].status,
+                              ),
                             ),
                           );
                         }

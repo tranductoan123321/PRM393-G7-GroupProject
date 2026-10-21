@@ -26,6 +26,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   int switchIndex = 0;
   bool isLoading = false;
   @override
+  void initState() {
+    super.initState();
+    context.read<FavoriteCubit>().getUserFavoriteIdList();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
@@ -40,14 +46,22 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             Expanded(
               child: BlocConsumer<FavoriteCubit, FavoriteState>(
                 listener: (context, state) {
+                  if (state.addOrRemoveFromFavoriteFailMessage.isNotEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.addOrRemoveFromFavoriteFailMessage),
+                      ),
+                    );
+                  }
                   if (state.favoriteListState == CubitState.loading) {
                     isLoading = true;
-                  }else{
+                  } else {
                     isLoading = false;
                   }
                 },
                 builder: (context, state) {
-                  if (state.favoriteList.isEmpty && state.favoriteListState == CubitState.success) {
+                  if (state.favoriteList.isEmpty &&
+                      state.favoriteListState == CubitState.success) {
                     return const EmptyWidget(
                       image: AssetsManager.favoriteImage,
                       title: StringsManager.emptyFavoriteTitle,
@@ -65,21 +79,35 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                       children: [
                         Expanded(
                           child: GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 13.h,
                               crossAxisSpacing: 10.w,
                               mainAxisExtent: 236.h,
                             ),
-                            itemCount: state.favoriteListState == CubitState.loading ? 6 : state.favoriteList.length,
+                            itemCount:
+                                state.favoriteListState == CubitState.loading
+                                    ? 6
+                                    : state.favoriteList.length,
                             itemBuilder: (context, index) {
-                              if (state.favoriteListState == CubitState.initial || state.favoriteListState == CubitState.loading) {
+                              if (state.favoriteListState ==
+                                      CubitState.initial ||
+                                  state.favoriteListState ==
+                                      CubitState.loading) {
                                 return const FavoriteShimmerLoadingCard();
                               } else {
-                                final String productId = state.favoriteList[index].id;
-                                final String productImage = state.favoriteList[index].images[0];
-                                final String productName = state.favoriteList[index].title;
-                                final int productPrice = state.favoriteList[index].price.toInt();
+                                final product = state.favoriteList[index];
+                                final String productId =
+                                    state.favoriteList[index].id;
+                                final String productImage =
+                                    product.images.isEmpty
+                                        ? ''
+                                        : product.images.first;
+                                final String productName =
+                                    state.favoriteList[index].title;
+                                final int productPrice =
+                                    state.favoriteList[index].price.toInt();
                                 return AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 500),
                                   switchInCurve: Curves.easeIn,
@@ -90,10 +118,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                     productId: productId,
                                     productName: productName,
                                     productPrice: productPrice,
-                                    isFavorite: state.favoritesIds.contains(productId),
+                                    isFavorite: state.favoritesIds.contains(
+                                      productId,
+                                    ),
                                     onCardTap: () {
-                                      context.pushRoute(ProductDetailsRoute(
-                                          productId: productId));
+                                      context.pushRoute(
+                                        ProductDetailsRoute(
+                                          productId: productId,
+                                        ),
+                                      );
                                     },
                                     onFavoriteTap: () {
                                       context
@@ -106,20 +139,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                       showModalBottomSheet(
                                         context: context,
                                         builder: (context) {
-                                          return BlocProvider.value(
-                                            value: context.read<FavoriteCubit>(),
-                                            child: BlocBuilder<FavoriteCubit, FavoriteState>(
-                                              builder: (context, state) {
-                                                return CartBottomSheet(
-                                                  productName: state.favoriteList[index].title,
-                                                  productId: state.favoriteList[index].id,
-                                                  productPrice: state.favoriteList[index].price.toInt(),
-                                                  productColors: state.favoriteList[index].colors,
-                                                  productSizes: state.favoriteList[index].sizes,
-                                                  productStock: state.favoriteList[index].stock,
-                                                );
-                                              },
-                                            ),
+                                          return CartBottomSheet(
+                                            productName: product.title,
+                                            productId: product.id,
+                                            productPrice: product.price.toInt(),
+                                            productColors: product.colors,
+                                            productSizes: product.sizes,
+                                            productStock: product.stock,
                                           );
                                         },
                                       );
