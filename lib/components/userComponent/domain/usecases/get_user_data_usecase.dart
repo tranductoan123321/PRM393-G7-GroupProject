@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/userComponent/domain/entities/user.dart';
 import 'package:efashion_flutter/components/userComponent/domain/repositories/user_repository.dart';
 import 'package:efashion_flutter/shared/error/failure.dart';
@@ -13,3 +13,4 @@ class GetUserDataUseCase{
     return await _userRepository.getUserData();
   }
 }
+// [CE1910016] implemented edit profile logic

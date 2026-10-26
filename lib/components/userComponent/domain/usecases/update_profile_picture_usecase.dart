@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/userComponent/domain/repositories/user_repository.dart';
 import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:injectable/injectable.dart';
@@ -12,3 +12,4 @@ class UpdateProfilePictureUseCase{
     return await _userRepository.updateUserPicture(imagePath: imagePath, imageName: imageName);
   }
 }
+// [CE1910016] implemented edit profile logic

@@ -1,4 +1,4 @@
-import 'package:efashion_flutter/components/userComponent/domain/entities/user.dart';
+﻿import 'package:efashion_flutter/components/userComponent/domain/entities/user.dart';
 import 'package:efashion_flutter/components/userComponent/domain/usecases/get_user_data_usecase.dart';
 import 'package:efashion_flutter/components/userComponent/domain/usecases/update_profile_picture_usecase.dart';
 import 'package:efashion_flutter/components/userComponent/domain/usecases/update_user_data_usecase.dart';
@@ -101,3 +101,4 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 }
+// [CE1910016] implemented edit profile logic

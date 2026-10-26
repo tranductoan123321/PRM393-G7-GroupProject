@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/userComponent/data/datasources/local/user_local_data_source.dart';
 import 'package:efashion_flutter/components/userComponent/data/datasources/remote/user_remote_data_source.dart';
 import 'package:efashion_flutter/components/userComponent/data/models/user_model.dart';
@@ -57,3 +57,4 @@ class UserRepositoryImpl extends UserRepository{
     }
   }
 }
+// [CE1910016] implemented edit profile logic

@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:efashion_flutter/components/userComponent/domain/entities/app_theme.dart';
 import 'package:efashion_flutter/components/userComponent/domain/entities/user.dart';
 import 'package:efashion_flutter/shared/error/failure.dart';
@@ -21,3 +21,4 @@ abstract class UserRepository {
     required String email,
   });
 }
+// [CE1910016] implemented edit profile logic

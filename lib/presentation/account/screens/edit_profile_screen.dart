@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:efashion_flutter/presentation/account/bloc/profile_cubit/profile_cubit.dart';
 import 'package:efashion_flutter/presentation/account/components/edit_profile/empty_profile_picture_edit.dart';
 import 'package:efashion_flutter/shared/constants/api_constants.dart';
@@ -75,3 +75,4 @@ class EditProfileScreen extends StatelessWidget {
     );
   }
 }
+// [CE1910016] implemented edit profile logic
