@@ -1,4 +1,4 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:efashion_flutter/injection_container.dart';
 import 'package:efashion_flutter/presentation/account/bloc/change_password_cubit/change_password_cubit.dart';
@@ -100,3 +100,4 @@ class ChangePasswordScreen extends StatelessWidget implements AutoRouteWrapper {
     );
   }
 }
+// [CE1910016] implemented change password logic

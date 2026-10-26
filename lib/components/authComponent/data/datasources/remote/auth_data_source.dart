@@ -1,4 +1,4 @@
-import 'package:efashion_flutter/shared/api/api_consumer.dart';
+﻿import 'package:efashion_flutter/shared/api/api_consumer.dart';
 import 'package:efashion_flutter/shared/constants/api_constants.dart';
 import 'package:efashion_flutter/shared/error/exception.dart';
 import 'package:efashion_flutter/components/authComponent/data/models/tokens_model.dart';
@@ -45,17 +45,23 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-    final response = await _apiConsumer.post(
-      ApiConstants.authLoginEndPoint,
-      body: {
-        "email": email,
-        "password": password,
-      },
-    );
-    if (response['status'] == ApiCallStatus.success.value) {
-      return TokensModel.fromJson(response);
-    } else {
-      throw const ServerException('Error! Wrong email or password.');
+    try {
+      final response = await _apiConsumer.post(
+        ApiConstants.authLoginEndPoint,
+        body: {
+          "email": email,
+          "password": password,
+        },
+      );
+      if (response['status'] == ApiCallStatus.success.value) {
+        return TokensModel.fromJson(response);
+      } else {
+        final errorMessage = response['message'] ?? 'Sai email hoặc mật khẩu.';
+        throw ServerException(errorMessage);
+      }
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException('Lỗi kết nối Server. Vui lòng thử lại sau.');
     }
   }
 
@@ -66,20 +72,29 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     required String password,
     required String phoneNumber,
   }) async {
-    final response = await _apiConsumer.post(
-      ApiConstants.authSignUpEndPoint,
-      body: {
-        "fullName": fullName,
-        "email": email,
-        "password": password,
-        "confirmPassword": password,
-        "phone": phoneNumber,
-      },
-    );
-    if (response['status'] == ApiCallStatus.success.value) {
-      return TokensModel.fromJson(response);
-    } else {
-      throw const ServerException('Error! Invalid email address.');
+    try {
+      final response = await _apiConsumer.post(
+        ApiConstants.authSignUpEndPoint,
+        body: {
+          "fullName": fullName,
+          "email": email,
+          "password": password,
+          "confirmPassword": password,
+          "phone": phoneNumber,
+        },
+      );
+
+      if (response['status'] == ApiCallStatus.success.value) {
+        return TokensModel.fromJson(response);
+      } else {
+        final errorMessage = response['message'] ?? 'Lỗi đăng ký từ Server.';
+        throw ServerException(errorMessage);
+      }
+    } catch (e) {
+      if (e is ServerException) {
+        rethrow;
+      }
+      throw ServerException('Lỗi kết nối Server. Vui lòng thử lại sau.');
     }
   }
 
@@ -169,3 +184,4 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     }
   }
 }
+// [CE1910016] implemented change password logic
