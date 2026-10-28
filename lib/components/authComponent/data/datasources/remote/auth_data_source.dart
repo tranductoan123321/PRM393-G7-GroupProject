@@ -45,7 +45,6 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-    try {
       final response = await _apiConsumer.post(
         ApiConstants.authLoginEndPoint,
         body: {
@@ -56,12 +55,6 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
       if (response['status'] == ApiCallStatus.success.value) {
         return TokensModel.fromJson(response);
       } else {
-        final errorMessage = response['message'] ?? 'Sai email hoặc mật khẩu.';
-        throw ServerException(errorMessage);
-      }
-    } catch (e) {
-      if (e is ServerException) rethrow;
-      throw ServerException('Lỗi kết nối Server. Vui lòng thử lại sau.');
     }
   }
 
@@ -72,7 +65,6 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     required String password,
     required String phoneNumber,
   }) async {
-    try {
       final response = await _apiConsumer.post(
         ApiConstants.authSignUpEndPoint,
         body: {
@@ -83,18 +75,9 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
           "phone": phoneNumber,
         },
       );
-
       if (response['status'] == ApiCallStatus.success.value) {
         return TokensModel.fromJson(response);
       } else {
-        final errorMessage = response['message'] ?? 'Lỗi đăng ký từ Server.';
-        throw ServerException(errorMessage);
-      }
-    } catch (e) {
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException('Lỗi kết nối Server. Vui lòng thử lại sau.');
     }
   }
 

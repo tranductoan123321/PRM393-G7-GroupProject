@@ -1,10 +1,6 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:efashion_flutter/core/router/app_router.dart';
 import 'package:efashion_flutter/presentation/product/bloc/collections_cubit/collections_cubit.dart';
 import 'package:efashion_flutter/presentation/product/bloc/home_bloc/home_bloc.dart';
-import 'package:efashion_flutter/presentation/product/components/home/collection/animated_indicator.dart';
-import 'package:efashion_flutter/presentation/product/components/home/collection/collection_carousel_card.dart';
 import 'package:efashion_flutter/presentation/product/components/home/collection/collection_shimmer_loading.dart';
 import 'package:efashion_flutter/shared/util/colors_manager.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +12,6 @@ class CollectionCarouselComponent extends StatefulWidget {
   const CollectionCarouselComponent({super.key});
 
   @override
-  State<CollectionCarouselComponent> createState() =>
-      _CollectionCarouselComponentState();
 }
 
 class _CollectionCarouselComponentState extends State<CollectionCarouselComponent> {
@@ -29,13 +23,9 @@ class _CollectionCarouselComponentState extends State<CollectionCarouselComponen
       builder: (context, state) {
         if (state.collectionsList.isEmpty) {
           return const CollectionShimmerLoading();
-        }
-
         return Stack(
           children: [
             BlocBuilder<CollectionsCubit, CollectionsState>(
-              buildWhen: (previous, current) =>
-                  previous.collectionsState != current.collectionsState,
               builder: (context, state) {
                 return CarouselSlider.builder(
                   itemCount: state.collectionsList.length,
@@ -48,8 +38,6 @@ class _CollectionCarouselComponentState extends State<CollectionCarouselComponen
                         context.pushRoute(
                           CollectionDetailsRoute(
                             collectionId: state.collectionsList[index].id,
-                            collectionName: state.collectionsList[index].title,
-                            collectionPrice: state.collectionsList[index].price,
                           ),
                         );
                       },

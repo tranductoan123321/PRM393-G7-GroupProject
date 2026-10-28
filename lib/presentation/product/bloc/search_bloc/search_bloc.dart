@@ -1,4 +1,5 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:efashion_flutter/components/productComponent/domain/entities/product.dart';
 import 'package:efashion_flutter/components/productComponent/domain/usecases/search/search_for_product_usecase.dart';
 import 'package:efashion_flutter/shared/util/enums.dart';
 import 'package:equatable/equatable.dart';
@@ -9,6 +10,8 @@ import 'package:rxdart/rxdart.dart';
 import 'search_state.dart';
 
 part 'search_event.dart';
+
+part 'search_state.dart';
 
 @injectable
 class SearchBloc extends Bloc<SearchEvent, SearchState> {

@@ -38,8 +38,6 @@ class _LocationScreenState extends State<LocationScreen> {
 
   CameraPosition _setInitialPosition() {
     return const CameraPosition(
-      target: LatLng(10.01245, 105.73243), // Đại học FPT Cần Thơ
-      zoom: 16.0,
     );
   }
 
@@ -76,13 +74,13 @@ class _LocationScreenState extends State<LocationScreen> {
           if (state.locationUpdateState == BlocState.failure ||
               state.locationUpdateState == BlocState.success) {
             await Future.delayed(const Duration(milliseconds: 500));
-            if (mounted) {
+            if(mounted){
               ScaffoldMessenger.of(context).showSnackBar(
                 CustomSnackBar.show(
                   customSnackBarType:
-                      state.locationUpdateState == BlocState.failure
-                          ? CustomSnackBarType.error
-                          : CustomSnackBarType.success,
+                  state.locationUpdateState == BlocState.failure
+                      ? CustomSnackBarType.error
+                      : CustomSnackBarType.success,
                   message: state.locationUpdateMessage,
                   context: context,
                 ),
@@ -174,9 +172,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                 ? StringsManager.updateLocationButton
                                 : StringsManager.confirmLocationButton,
                             onTap: () {
-                              context
-                                  .read<MapBloc>()
-                                  .add(const UpdateUserLocationEvent());
                             },
                           ),
                         ),
