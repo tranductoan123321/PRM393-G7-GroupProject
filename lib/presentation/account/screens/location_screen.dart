@@ -38,8 +38,6 @@ class _LocationScreenState extends State<LocationScreen> {
 
   CameraPosition _setInitialPosition() {
     return const CameraPosition(
-      target: LatLng(31.205753, 29.924526),
-      zoom: 13.151926040649414,
     );
   }
 
@@ -164,20 +162,20 @@ class _LocationScreenState extends State<LocationScreen> {
               child: BlocBuilder<MapBloc, MapState>(
                 builder: (context, state) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0).r,
-                    child: Visibility(
-                      visible: state.setMarkerState == BlocState.success,
-                      child: CustomFadeAnimation(
-                        duration: const Duration(milliseconds: 500),
-                        child: PrimaryButton(
-                            buttonTitle: state.userLocation.latitude != 0 ? StringsManager.updateLocationButton :  StringsManager.confirmLocationButton,
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0).r,
+                      child: Visibility(
+                        visible: state.setMarkerState == BlocState.success,
+                        child: CustomFadeAnimation(
+                          duration: const Duration(milliseconds: 500),
+                          child: PrimaryButton(
+                            buttonTitle: state.userLocation.latitude != 0
+                                ? StringsManager.updateLocationButton
+                                : StringsManager.confirmLocationButton,
                             onTap: () {
-                              context.read<MapBloc>().add(const UpdateUserLocationEvent());
                             },
                           ),
-                      ),
-                    )
-                  );
+                        ),
+                      ));
                 },
               ),
             ),
