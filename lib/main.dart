@@ -7,6 +7,8 @@ import 'package:efashion_flutter/shared/util/payment_manager.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await NotificationsManagerImpl().showNotification(message: message);
@@ -14,6 +16,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("dotenv load note: $e");
+  }
   await Future.wait([
     NotificationsManagerImpl().init(),
     HiveConfiguration.init(),

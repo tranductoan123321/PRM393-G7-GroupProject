@@ -121,10 +121,12 @@ class AccountContainerComponent extends StatelessWidget {
                       activeThumbColor: Colors.white,
                       disabledTrackColor: ColorsManager.successColor,
                       onChanged: (switched) {
-                        if (switched && state.notificationsPermissionsState == NotificationsPermissionsState.granted) {
-                          context.read<NotificationsCubit>().subscribeToNotifications();
-                        } else if (state.notificationsPermissionsState == NotificationsPermissionsState.denied || state.notificationsPermissionsState == NotificationsPermissionsState.permanentlyDenied) {
-                          context.read<NotificationsCubit>().requestNotificationsPermissions();
+                        if (switched) {
+                          if (state.notificationsPermissionsState == NotificationsPermissionsState.granted) {
+                            context.read<NotificationsCubit>().subscribeToNotifications();
+                          } else {
+                            context.read<NotificationsCubit>().requestNotificationsPermissions();
+                          }
                         } else {
                           context.read<NotificationsCubit>().unSubscribeFromNotifications();
                         }

@@ -96,8 +96,13 @@ class _ChatSupportScreenState extends State<ChatSupportScreen> {
                                 } else {
                                   return const ShimmerLoadingMessage(isReversed: true);
                                 }
-                              } else {
-                                final date = DateFormat.jm().format(DateTime.parse(state.chatMessages[index].date,).toLocal());
+                                DateTime messageDate;
+                                try {
+                                  messageDate = DateTime.parse(state.chatMessages[index].date).toLocal();
+                                } catch (_) {
+                                  messageDate = DateTime.now();
+                                }
+                                final date = DateFormat.jm().format(messageDate);
                                 if (state.chatMessages[index].isMe == true) {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 16.0).r,

@@ -47,6 +47,16 @@ class NotificationsManagerImpl extends NotificationManager{
           ),
         ),
       );
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'high_importance_channel',
+        'eFashion Notifications',
+        description: 'channel used for very important notifications',
+        importance: Importance.max,
+      );
+      await _notification
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
       FirebaseMessaging.onMessage.listen((event) async {
         await NotificationsManagerImpl().showNotification(message: event);
       });
@@ -98,10 +108,33 @@ class NotificationsManagerImpl extends NotificationManager{
     );
     await _notification.show(
       DateTime.now().microsecond,
-      message.data['title'],
-      message.data['body'],
+      message.notification?.title ?? message.data['title'] ?? 'E-Fashion',
+      message.notification?.body ?? message.data['body'] ?? '',
       platformChannelSpecifics,
       payload: message.data['type'],
+    );
+  }
+
+  Future<void> showQuickBannerNotification({required String title, required String body}) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'high_importance_channel',
+      'eFashion Notifications',
+      channelDescription: 'channel used for very important notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/notifications',
+      ticker: 'ticker',
+    );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+    );
+    await _notification.show(
+      DateTime.now().millisecond,
+      title,
+      body,
+      platformChannelSpecifics,
     );
   }
 

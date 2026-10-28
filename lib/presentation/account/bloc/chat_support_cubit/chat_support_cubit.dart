@@ -7,9 +7,12 @@ import 'package:efashion_flutter/components/chatSupportComponent/domain/usecases
 import 'package:efashion_flutter/components/chatSupportComponent/domain/usecases/get_chat_messages_usecase.dart';
 import 'package:efashion_flutter/components/chatSupportComponent/domain/usecases/get_chat_stream_usecase.dart';
 import 'package:efashion_flutter/components/chatSupportComponent/domain/usecases/send_message_usecase.dart';
+import 'package:dio/dio.dart';
 import 'package:efashion_flutter/shared/util/enums.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:injectable/injectable.dart';
 
 part 'chat_support_state.dart';
@@ -89,14 +92,79 @@ class ChatSupportCubit extends Cubit<ChatSupportState> {
               sendMessageState: CubitState.failure,
               chatFailMessage: failure.message),
         ),
-        (sentMessage) => emit(
-          state.copyWith(
-            sendMessageState: CubitState.success,
-            chatMessages: [sentMessage, ...state.chatMessages],
-          ),
-        ),
+        (sentMessage) {
+          emit(
+            state.copyWith(
+              sendMessageState: CubitState.success,
+              chatMessages: [sentMessage, ...state.chatMessages],
+            ),
+          );
+          _triggerSmartBotReply(message);
+        },
       );
     }
+  }
+
+  void _triggerSmartBotReply(String userQuery) {
+    Timer(const Duration(milliseconds: 600), () async {
+      String reply = '';
+
+      // Tích hợp trực tiếp Google Gemini 1.5 Flash AI
+      final geminiKey = dotenv.env['GEMINI_API_KEY'] ??
+          dotenv.env['GOOGLE_GEMINI_KEY'] ??
+          '';
+
+      if (geminiKey.isNotEmpty) {
+        try {
+          final dio = Dio();
+          final response = await dio.post(
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$geminiKey',
+            data: {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text":
+                          "Bạn là nhân viên tư vấn và trợ lý ảo thông minh của cửa hàng thời trang E-Fashion tại Việt Nam. "
+                          "Hãy trả lời khách hàng một cách thân thiện, lịch sự, ngắn gọn (tối đa 2-3 câu) bằng tiếng Việt để tư vấn mua sắm, chọn size, phối đồ hoặc hỗ trợ đơn hàng. "
+                          "Câu hỏi của khách hàng: '$userQuery'"
+                    }
+                  ]
+                }
+              ]
+            },
+            options: Options(
+              headers: {'Content-Type': 'application/json'},
+              sendTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+            ),
+          );
+
+          if (response.statusCode == 200 &&
+              response.data['candidates'] != null &&
+              (response.data['candidates'] as List).isNotEmpty) {
+            reply = response.data['candidates'][0]['content']['parts'][0]['text']
+                .toString()
+                .trim();
+          }
+        } catch (e) {
+          debugPrint("Gemini API error: $e");
+          reply = 'Dạ E-Fashion xin chào bạn! Đội ngũ chăm sóc khách hàng đã ghi nhận câu hỏi và sẽ hỗ trợ tư vấn chi tiết cho bạn ngay nhé!';
+        }
+      } else {
+        reply = 'Dạ E-Fashion xin chào bạn! Bạn có thể cho shop biết thêm về yêu cầu chọn size hay mẫu sản phẩm bạn quan tâm nhé!';
+      }
+
+      if (reply.isEmpty) return;
+
+      final botMessage = ChatMessage(
+        message: reply,
+        isMe: false,
+        date: DateTime.now().toIso8601String(),
+      );
+
+      _messageReceived(receivedMessage: botMessage);
+    });
   }
 
   void _messageReceived({required ChatMessage receivedMessage}) {

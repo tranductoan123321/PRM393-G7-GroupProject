@@ -73,9 +73,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               padding: const EdgeInsets.only(bottom: 16.0).r,
                               child: const NotificationShimmerLoading(),
                             );
-                          } else {
-                            String formattedDate = DateFormat.jm().format(DateTime.parse(state.notifications[index].date).toLocal(),
-                            );
+                            DateTime notifDate;
+                            try {
+                              notifDate = DateTime.parse(state.notifications[index].date).toLocal();
+                            } catch (_) {
+                              notifDate = DateTime.now();
+                            }
+                            String formattedDate = DateFormat.jm().format(notifDate);
                             if (state.notifications[index].type == NotificationType.newMessage.value) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0).r,
