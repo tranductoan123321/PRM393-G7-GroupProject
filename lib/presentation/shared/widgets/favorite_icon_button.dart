@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// [FavoriteIconButton] - UC: Add to Wishlist
+/// Heart icon button that toggles product wishlist status with smooth animation.
 class FavoriteIconButton extends StatelessWidget {
   final bool isFavorite;
   final void Function() onFavoriteTap;

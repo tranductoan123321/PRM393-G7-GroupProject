@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// [FavoriteScreen] - UC: Wishlist Screen
+/// Displays the list of products bookmarked/favorited by the user with grid & list layouts.
 @RoutePage()
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
