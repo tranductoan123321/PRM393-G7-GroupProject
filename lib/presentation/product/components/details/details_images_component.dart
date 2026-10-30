@@ -13,6 +13,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// [DetailsImagesComponent] - UC: View Product Details (Product Media Gallery)
+/// Displays a carousel slider of product images with an animated indicator.
 class DetailsImagesComponent extends StatefulWidget {
   const DetailsImagesComponent({super.key});
 

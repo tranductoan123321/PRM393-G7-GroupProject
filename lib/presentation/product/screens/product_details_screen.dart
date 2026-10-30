@@ -14,6 +14,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// [ProductDetailsScreen] - UC: View Product Details
+/// Displays comprehensive details of a product including media carousel,
+/// price, color and size options, quantity selector, and user reviews.
 @RoutePage()
 class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({super.key, required this.productId});
