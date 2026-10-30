@@ -86,6 +86,7 @@ class _ProductCartComponentState extends State<ProductCartComponent> {
               ) : const SizedBox.shrink(),
            ),
           SizedBox(height: 20.h),
+          // --- Feature: Select Product Color ---
           widget.productColors.isNotEmpty
               ? Row(
                   children: [

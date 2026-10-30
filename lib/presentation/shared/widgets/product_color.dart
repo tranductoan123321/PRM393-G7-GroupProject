@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// [SelectableProductColor] - UC: Select Color
+/// Interactive color selector displaying a hex-colored circle with border indicator on selection.
 class SelectableProductColor extends StatelessWidget {
 
   final String color;
