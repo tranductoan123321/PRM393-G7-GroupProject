@@ -156,6 +156,7 @@ class _ProductCartComponentState extends State<ProductCartComponent> {
                   ],
                 )
               : const SizedBox.shrink(),
+          // --- Feature: Adjust Quantity ---
           Row(
             children: [
               Text(

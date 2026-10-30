@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// [ProductPiecesCounter] - UC: Adjust Quantity
+/// Provides minus/plus controls to adjust the piece quantity with real-time feedback.
 class ProductPiecesCounter extends StatelessWidget {
   final void Function() onIncrementPress;
   final void Function() onDecrementPress;
