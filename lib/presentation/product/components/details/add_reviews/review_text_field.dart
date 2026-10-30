@@ -3,6 +3,8 @@ import 'package:efashion_flutter/shared/util/validation_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// [ReviewTextField] - UC: Add New Review / Edit Review
+/// Multi-line text field with 200-character limit and validation for customer comments.
 class ReviewTextField extends StatelessWidget {
   final void Function(String? value) onSaved;
   final TextEditingController reviewController;

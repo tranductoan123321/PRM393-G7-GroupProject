@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// [AddOrEditReviewScreen] - UC: Add New Review & Edit Review
+/// Form screen allowing customers to give star ratings and write review comments.
 @RoutePage()
 class AddOrEditReviewScreen extends StatefulWidget {
   final String productId;
