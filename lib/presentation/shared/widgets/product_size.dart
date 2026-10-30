@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// [SelectableProductSize] - UC: Select Size
+/// Interactive size chip widget with smooth active/inactive selection animations.
 class SelectableProductSize extends StatelessWidget {
   final String size;
   final void Function() onTap;
