@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// [AllReviewsScreen] - UC: View All Reviews
+/// Displays the full scrollable list of customer reviews and ratings for a product.
 @RoutePage()
 class AllReviewsScreen extends StatelessWidget {
 

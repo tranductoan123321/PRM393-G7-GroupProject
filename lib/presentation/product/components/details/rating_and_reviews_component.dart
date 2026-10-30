@@ -14,6 +14,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
+/// [RatingAndReviewsComponent] - UC: View All Reviews & Ratings Summary
+/// Displays rating metrics, distribution bar charts, and initial review cards.
 class RatingAndReviewsComponent extends StatelessWidget {
   final String productId;
 
