@@ -102,6 +102,8 @@ class DetailsCubit extends Cubit<DetailsState> {
       );
   }
 
+  /// UC: Add New Review & Edit Review
+  /// Updates user rating and comment if changes are detected, then updates review state.
   Future<void> addOrEditProductReview({
     required String productId,
     required double rate,

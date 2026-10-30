@@ -101,6 +101,7 @@ class _AddOrEditReviewScreenState extends State<AddOrEditReviewScreen> {
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
+                            // --- Feature: Submit Add/Edit Review ---
                             context.read<DetailsCubit>().addOrEditProductReview(
                                 productId: widget.productId,
                                 rate: _rate,
