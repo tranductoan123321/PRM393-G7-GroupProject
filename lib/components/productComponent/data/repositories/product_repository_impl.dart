@@ -65,6 +65,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC1: View Product Details - Data Repository Impl
   @override
   Future<Either<Failure, ProductDetails>> getProductDetails({required String productId}) async {
     try {

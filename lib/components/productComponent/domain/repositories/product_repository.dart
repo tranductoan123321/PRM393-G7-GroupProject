@@ -7,6 +7,7 @@ import 'package:efashion_flutter/components/productComponent/domain/entities/cat
 import 'package:efashion_flutter/components/productComponent/domain/entities/product.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/product_details.dart';
 
+/// UC1: View Product Details - Domain Repository Interface
 abstract class ProductRepository{
   const ProductRepository();
   Future<Either<Failure, List<Category>>> getCategories({required int genderId});

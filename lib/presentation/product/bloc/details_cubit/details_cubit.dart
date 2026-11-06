@@ -16,6 +16,7 @@ import 'package:injectable/injectable.dart';
 
 part 'details_state.dart';
 
+/// UC1: View Product Details - Presentation Cubit
 @injectable
 class DetailsCubit extends Cubit<DetailsState> {
   final GetProductDetailsUseCase _getProductDetailsUseCase;
