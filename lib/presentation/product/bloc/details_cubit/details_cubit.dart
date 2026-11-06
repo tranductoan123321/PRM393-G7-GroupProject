@@ -70,6 +70,7 @@ class DetailsCubit extends Cubit<DetailsState> {
     );
   }
 
+  /// UC7: Edit Review - Presentation Cubit Method
   Future<void> getUserProductReview({
     required String productId,
   }) async {

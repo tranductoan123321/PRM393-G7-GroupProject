@@ -4,6 +4,7 @@ import 'package:efashion_flutter/components/productComponent/domain/repositories
 import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:injectable/injectable.dart';
 
+/// UC7: Edit Review - Domain UseCase
 @lazySingleton
 class GetUserProductReviewUseCase{
   final ProductRepository _productRepository;

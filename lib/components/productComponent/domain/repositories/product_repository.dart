@@ -24,6 +24,7 @@ abstract class ProductRepository{
   Future<Either<Failure, ReviewsAndRatings>> getProductReviewsAndRatings({required productId});
   /// UC6: Add New Review - Domain Repository Interface Method
   Future<Either<Failure, Review>> addOrEditProductReview({required String productId, required double rate, String? review});
+  /// UC7: Edit Review - Domain Repository Interface Method
   Future<Either<Failure, Review>> getUserProductReview({required String productId});
   Future<Either<Failure, List<Product>>> searchForProducts({required String searchQuery, required int pageNumber, String? categories, String? brands,int? minPrice, int? maxPrice});
 }

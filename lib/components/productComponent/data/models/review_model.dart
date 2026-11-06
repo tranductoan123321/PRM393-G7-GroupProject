@@ -1,7 +1,7 @@
 import 'package:efashion_flutter/components/productComponent/data/models/reviewer_model.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/review.dart';
 
-/// UC6: Add New Review - Data Model
+/// UC7: Edit Review - Data Model
 class ReviewModel extends Review {
   const ReviewModel({
     required super.id,
