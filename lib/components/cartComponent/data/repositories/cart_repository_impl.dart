@@ -10,7 +10,7 @@ import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:efashion_flutter/shared/util/enums.dart';
 import 'package:injectable/injectable.dart';
 @LazySingleton(as: CartRepository)
-/// UC3: Select Color - Data Repository Impl
+/// UC4: Adjust Quantity - Data Repository Impl
 class CartRepositoryImpl extends CartRepository{
   final CartDataSource _cartDataSource;
 

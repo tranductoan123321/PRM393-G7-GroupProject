@@ -161,6 +161,7 @@ class CartCubit extends Cubit<CartState> {
   void updateSelectedSize(String? size) {
     emit(state.copyWith(selectedSize: () => size));
   }
+  /// UC4: Adjust Quantity - Presentation Cubit Method
   void updateSelectedQuantity(int quantity) {
     emit(state.copyWith(selectedQuantity: quantity));
   }

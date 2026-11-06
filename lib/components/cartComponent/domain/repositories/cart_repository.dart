@@ -4,7 +4,7 @@ import 'package:efashion_flutter/components/cartComponent/domain/entities/cart_o
 import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:efashion_flutter/shared/util/enums.dart';
 
-/// UC3: Select Color - Domain Repository Interface
+/// UC4: Adjust Quantity - Domain Repository Interface
 abstract class CartRepository {
   Future<Either<Failure, Cart>> addProductToCart({
     required String productId,

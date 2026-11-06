@@ -1,7 +1,7 @@
 import 'package:efashion_flutter/components/cartComponent/domain/entities/cart_product.dart';
 import 'package:equatable/equatable.dart';
 
-/// UC3: Select Color - Domain Entity
+/// UC4: Adjust Quantity - Domain Entity
 class Cart extends Equatable {
   final List<CartProduct> products;
   final int subTotal;

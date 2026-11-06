@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// UC4: Adjust Quantity - Presentation UI Widget
 class ProductPiecesCounter extends StatelessWidget {
   final void Function() onIncrementPress;
   final void Function() onDecrementPress;
