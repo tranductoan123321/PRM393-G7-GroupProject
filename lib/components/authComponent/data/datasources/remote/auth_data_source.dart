@@ -45,16 +45,17 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     required String email,
     required String password,
   }) async {
-      final response = await _apiConsumer.post(
-        ApiConstants.authLoginEndPoint,
-        body: {
-          "email": email,
-          "password": password,
-        },
-      );
-      if (response['status'] == ApiCallStatus.success.value) {
-        return TokensModel.fromJson(response);
-      } else {
+    final response = await _apiConsumer.post(
+      ApiConstants.authLoginEndPoint,
+      body: {
+        "email": email,
+        "password": password,
+      },
+    );
+    if (response['status'] == ApiCallStatus.success.value) {
+      return TokensModel.fromJson(response);
+    } else {
+      throw const ServerException('Error! Wrong email or password.');
     }
   }
 
@@ -65,19 +66,20 @@ class AuthDataSourceImpl extends AuthRemoteDataSource {
     required String password,
     required String phoneNumber,
   }) async {
-      final response = await _apiConsumer.post(
-        ApiConstants.authSignUpEndPoint,
-        body: {
-          "fullName": fullName,
-          "email": email,
-          "password": password,
-          "confirmPassword": password,
-          "phone": phoneNumber,
-        },
-      );
-      if (response['status'] == ApiCallStatus.success.value) {
-        return TokensModel.fromJson(response);
-      } else {
+    final response = await _apiConsumer.post(
+      ApiConstants.authSignUpEndPoint,
+      body: {
+        "fullName": fullName,
+        "email": email,
+        "password": password,
+        "confirmPassword": password,
+        "phone": phoneNumber,
+      },
+    );
+    if (response['status'] == ApiCallStatus.success.value) {
+      return TokensModel.fromJson(response);
+    } else {
+      throw const ServerException('Error! Invalid email address.');
     }
   }
 

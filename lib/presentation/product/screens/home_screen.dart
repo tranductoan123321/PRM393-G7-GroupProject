@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocConsumer<HomeBloc, HomeState>(
+        buildWhen: (previous, current) => previous.categoriesState != current.categoriesState,
         listener: (context, state) {
           if (state.offersState == BlocState.loading ||
               state.brandsProductsState == BlocState.loading ||
@@ -64,21 +65,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 context.read<CollectionsCubit>().getCollectionsList();
               },
             );
-          return ListView(
-            scrollDirection: Axis.vertical,
-            cacheExtent: double.infinity,
-            padding: EdgeInsets.zero,
-            children: [
-              const CollectionCarouselComponent(),
-              SizedBox(height: 10.h),
-              const CategoriesComponent(),
-              SizedBox(height: 20.h),
-              const OffersCarouselComponent(),
-              SizedBox(height: 20.h),
-              const BrandComponent(),
-              SizedBox(height: 100.h),
-            ],
-          );
+          } else {
+            return ListView(
+              scrollDirection: Axis.vertical,
+              cacheExtent: double.infinity,
+              padding: EdgeInsets.zero,
+              children: [
+                const CollectionCarouselComponent(),
+                SizedBox(height: 10.h),
+                const CategoriesComponent(),
+                SizedBox(height: 20.h),
+                const OffersCarouselComponent(),
+                SizedBox(height: 20.h),
+                const BrandComponent(),
+                SizedBox(height: 100.h),
+              ],
+            );
+          }
         },
       ),
     );

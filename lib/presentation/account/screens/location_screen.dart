@@ -38,6 +38,8 @@ class _LocationScreenState extends State<LocationScreen> {
 
   CameraPosition _setInitialPosition() {
     return const CameraPosition(
+      target: LatLng(10.01245, 105.73243),
+      zoom: 16.0,
     );
   }
 
