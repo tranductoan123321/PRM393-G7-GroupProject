@@ -86,6 +86,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC8: Add to Wishlist - Data Repository Impl
   @override
   Future<Either<Failure, Set<String>>> addProductToFavoriteList({
     required String productId,

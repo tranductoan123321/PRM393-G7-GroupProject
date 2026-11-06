@@ -16,6 +16,7 @@ abstract class ProductRepository{
   Future<Either<Failure, Map<String, List<Product>>>> getAllBrandsProducts({required List<Brand> brandsList, String? categories});
   Future<Either<Failure, ProductDetails>> getProductDetails({required String productId});
   Future<Either<Failure, Set<String>>> getUserFavoriteProductIds();
+  /// UC8: Add to Wishlist - Domain Repository Interface Method
   Future<Either<Failure, Set<String>>> addProductToFavoriteList({required String productId});
   Future<Either<Failure, String>> removeProductFromFavoriteList({required String productId});
   Future<Either<Failure, List<Product>>> getBrandProducts({required String brandId, required int pageNumber, required String? categories});

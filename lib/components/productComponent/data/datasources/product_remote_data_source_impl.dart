@@ -112,6 +112,7 @@ class ProductRemoteDataSourceImpl extends ProductRemoteDataSource {
     return productDetails;
   }
 
+  /// UC8: Add to Wishlist - Data Remote DataSource Method
   @override
   Future<Set<String>> getUserFavoriteProductsIds() async {
     final Map<String, dynamic> response = await _apiConsumer.get(

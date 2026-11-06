@@ -13,6 +13,7 @@ import 'package:injectable/injectable.dart';
 
 part 'favorite_state.dart';
 
+/// UC8: Add to Wishlist - Presentation Cubit
 @injectable
 class FavoriteCubit extends Cubit<FavoriteState> {
   final GetUserFavoriteProductsIdsUseCase _getUserFavoriteProductsIdsUseCase;

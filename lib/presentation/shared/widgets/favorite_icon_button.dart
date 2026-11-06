@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// UC8: Add to Wishlist - Presentation UI Widget
 class FavoriteIconButton extends StatelessWidget {
   final bool isFavorite;
   final void Function() onFavoriteTap;

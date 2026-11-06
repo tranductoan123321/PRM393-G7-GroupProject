@@ -3,6 +3,7 @@ import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:efashion_flutter/components/productComponent/domain/repositories/product_repository.dart';
 import 'package:injectable/injectable.dart';
 
+/// UC8: Add to Wishlist - Domain UseCase
 @lazySingleton
 class AddProductToFavoriteListUseCase {
   final ProductRepository _productRepository;
