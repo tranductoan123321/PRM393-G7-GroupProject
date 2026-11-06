@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// UC2: Select Size - Presentation UI Widget
 class SelectableProductSize extends StatelessWidget {
   final String size;
   final void Function() onTap;

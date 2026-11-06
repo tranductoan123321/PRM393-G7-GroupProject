@@ -4,6 +4,7 @@ import 'package:efashion_flutter/components/cartComponent/domain/repositories/ca
 import 'package:efashion_flutter/shared/error/failure.dart';
 import 'package:injectable/injectable.dart';
 
+/// UC2: Select Size - Domain UseCase
 @lazySingleton
 class AddProductToCartUseCase {
   final CartRepository _cartRepository;
