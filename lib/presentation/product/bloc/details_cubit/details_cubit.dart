@@ -104,6 +104,7 @@ class DetailsCubit extends Cubit<DetailsState> {
       );
   }
 
+  /// UC6: Add New Review - Presentation Cubit Method
   Future<void> addOrEditProductReview({
     required String productId,
     required double rate,
