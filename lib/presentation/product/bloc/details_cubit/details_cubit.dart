@@ -50,6 +50,7 @@ class DetailsCubit extends Cubit<DetailsState> {
     );
   }
 
+  /// UC5: View All Reviews - Presentation Cubit Method
   Future<void> getProductReviewsAndRatings({required String productId}) async {
     final Either<Failure, ReviewsAndRatings> response =
         await _getProductReviewsAndRatingsUseCase(productId: productId);

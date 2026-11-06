@@ -145,6 +145,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC5: View All Reviews - Data Repository Impl
   @override
   Future<Either<Failure, ReviewsAndRatings>> getProductReviewsAndRatings(
       {required productId}) async {

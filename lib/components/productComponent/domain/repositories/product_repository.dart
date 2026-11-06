@@ -20,6 +20,7 @@ abstract class ProductRepository{
   Future<Either<Failure, String>> removeProductFromFavoriteList({required String productId});
   Future<Either<Failure, List<Product>>> getBrandProducts({required String brandId, required int pageNumber, required String? categories});
   Future<Either<Failure, List<ProductDetails>>> getFavoriteProducts({required Set<String> favoriteIds});
+  /// UC5: View All Reviews - Domain Repository Interface Method
   Future<Either<Failure, ReviewsAndRatings>> getProductReviewsAndRatings({required productId});
   Future<Either<Failure, Review>> addOrEditProductReview({required String productId, required double rate, String? review});
   Future<Either<Failure, Review>> getUserProductReview({required String productId});
