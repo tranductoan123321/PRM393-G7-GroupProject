@@ -152,6 +152,7 @@ class CartCubit extends Cubit<CartState> {
   }
 
 
+  /// UC3: Select Color - Presentation Cubit Method
   void updateSelectedColor(String? color) {
     emit(state.copyWith(selectedColor: () => color));
   }

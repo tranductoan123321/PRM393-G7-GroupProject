@@ -1,7 +1,7 @@
 import 'package:efashion_flutter/components/cartComponent/data/models/cart_product_model.dart';
 import 'package:efashion_flutter/components/cartComponent/domain/entities/cart.dart';
 
-/// UC2: Select Size - Data Model
+/// UC3: Select Color - Data Model
 class CartModel extends Cart {
   const CartModel({
     required super.products,
