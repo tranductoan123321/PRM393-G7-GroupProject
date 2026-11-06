@@ -152,13 +152,16 @@ class CartCubit extends Cubit<CartState> {
   }
 
 
+  /// UC3: Select Color - Presentation Cubit Method
   void updateSelectedColor(String? color) {
     emit(state.copyWith(selectedColor: () => color));
   }
 
+  /// UC2: Select Size - Presentation Cubit Method
   void updateSelectedSize(String? size) {
     emit(state.copyWith(selectedSize: () => size));
   }
+  /// UC4: Adjust Quantity - Presentation Cubit Method
   void updateSelectedQuantity(int quantity) {
     emit(state.copyWith(selectedQuantity: quantity));
   }

@@ -3,6 +3,7 @@ import 'package:efashion_flutter/shared/util/validation_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// UC7: Edit Review - Presentation UI Component
 class ReviewTextField extends StatelessWidget {
   final void Function(String? value) onSaved;
   final TextEditingController reviewController;

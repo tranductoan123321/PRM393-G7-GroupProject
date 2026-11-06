@@ -1,6 +1,7 @@
 import 'package:efashion_flutter/components/productComponent/data/models/product_color_model.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/product_details.dart';
 
+/// UC1: View Product Details - Data Model
 class ProductDetailsModel extends ProductDetails {
   const ProductDetailsModel({
     required super.id,

@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'search_state.dart';
+
 part 'search_event.dart';
 
 part 'search_state.dart';

@@ -7,6 +7,7 @@ import 'package:efashion_flutter/components/productComponent/domain/entities/cat
 import 'package:efashion_flutter/components/productComponent/domain/entities/product.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/product_details.dart';
 
+/// UC1: View Product Details - Domain Repository Interface
 abstract class ProductRepository{
   const ProductRepository();
   Future<Either<Failure, List<Category>>> getCategories({required int genderId});
@@ -15,12 +16,16 @@ abstract class ProductRepository{
   Future<Either<Failure, Map<String, List<Product>>>> getAllBrandsProducts({required List<Brand> brandsList, String? categories});
   Future<Either<Failure, ProductDetails>> getProductDetails({required String productId});
   Future<Either<Failure, Set<String>>> getUserFavoriteProductIds();
+  /// UC8: Add to Wishlist - Domain Repository Interface Method
   Future<Either<Failure, Set<String>>> addProductToFavoriteList({required String productId});
   Future<Either<Failure, String>> removeProductFromFavoriteList({required String productId});
   Future<Either<Failure, List<Product>>> getBrandProducts({required String brandId, required int pageNumber, required String? categories});
   Future<Either<Failure, List<ProductDetails>>> getFavoriteProducts({required Set<String> favoriteIds});
+  /// UC5: View All Reviews - Domain Repository Interface Method
   Future<Either<Failure, ReviewsAndRatings>> getProductReviewsAndRatings({required productId});
+  /// UC6: Add New Review - Domain Repository Interface Method
   Future<Either<Failure, Review>> addOrEditProductReview({required String productId, required double rate, String? review});
+  /// UC7: Edit Review - Domain Repository Interface Method
   Future<Either<Failure, Review>> getUserProductReview({required String productId});
   Future<Either<Failure, List<Product>>> searchForProducts({required String searchQuery, required int pageNumber, String? categories, String? brands,int? minPrice, int? maxPrice});
 }

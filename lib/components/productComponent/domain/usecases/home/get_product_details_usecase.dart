@@ -4,6 +4,7 @@ import 'package:efashion_flutter/components/productComponent/domain/entities/pro
 import 'package:efashion_flutter/components/productComponent/domain/repositories/product_repository.dart';
 import 'package:injectable/injectable.dart';
 
+/// UC1: View Product Details - Domain UseCase
 @lazySingleton
 class GetProductDetailsUseCase{
   final ProductRepository _productRepository;

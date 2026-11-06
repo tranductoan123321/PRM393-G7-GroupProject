@@ -1,6 +1,7 @@
 import 'package:efashion_flutter/components/productComponent/domain/entities/product_color.dart';
 import 'package:equatable/equatable.dart';
 
+/// UC1: View Product Details - Domain Entity
 class ProductDetails extends Equatable {
   final String id;
   final String title;

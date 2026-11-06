@@ -1,6 +1,7 @@
 import 'package:efashion_flutter/components/productComponent/domain/entities/reviewer.dart';
 import 'package:equatable/equatable.dart';
 
+/// UC7: Edit Review - Domain Entity
 class Review extends Equatable {
   final String id;
   final Reviewer reviewer;

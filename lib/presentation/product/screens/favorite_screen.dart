@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// UC8: Add to Wishlist - Presentation UI Screen
 @RoutePage()
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});

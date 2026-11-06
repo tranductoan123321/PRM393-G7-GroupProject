@@ -16,6 +16,7 @@ import 'package:injectable/injectable.dart';
 
 part 'details_state.dart';
 
+/// UC1: View Product Details - Presentation Cubit
 @injectable
 class DetailsCubit extends Cubit<DetailsState> {
   final GetProductDetailsUseCase _getProductDetailsUseCase;
@@ -49,6 +50,7 @@ class DetailsCubit extends Cubit<DetailsState> {
     );
   }
 
+  /// UC5: View All Reviews - Presentation Cubit Method
   Future<void> getProductReviewsAndRatings({required String productId}) async {
     final Either<Failure, ReviewsAndRatings> response =
         await _getProductReviewsAndRatingsUseCase(productId: productId);
@@ -68,6 +70,7 @@ class DetailsCubit extends Cubit<DetailsState> {
     );
   }
 
+  /// UC7: Edit Review - Presentation Cubit Method
   Future<void> getUserProductReview({
     required String productId,
   }) async {
@@ -102,6 +105,7 @@ class DetailsCubit extends Cubit<DetailsState> {
       );
   }
 
+  /// UC6: Add New Review - Presentation Cubit Method
   Future<void> addOrEditProductReview({
     required String productId,
     required double rate,

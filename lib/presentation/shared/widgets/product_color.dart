@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+/// UC3: Select Color - Presentation UI Widget
 class SelectableProductColor extends StatelessWidget {
 
   final String color;

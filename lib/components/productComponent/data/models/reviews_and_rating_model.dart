@@ -1,6 +1,7 @@
 import 'package:efashion_flutter/components/productComponent/data/models/review_model.dart';
 import 'package:efashion_flutter/components/productComponent/domain/entities/reviews_and_rating.dart';
 
+/// UC5: View All Reviews - Data Model
 class ReviewsAndRatingsModel extends ReviewsAndRatings {
   const ReviewsAndRatingsModel({
     required super.average,

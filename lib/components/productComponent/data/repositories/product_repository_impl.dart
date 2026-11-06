@@ -65,6 +65,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC1: View Product Details - Data Repository Impl
   @override
   Future<Either<Failure, ProductDetails>> getProductDetails({required String productId}) async {
     try {
@@ -85,6 +86,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC8: Add to Wishlist - Data Repository Impl
   @override
   Future<Either<Failure, Set<String>>> addProductToFavoriteList({
     required String productId,
@@ -144,6 +146,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC5: View All Reviews - Data Repository Impl
   @override
   Future<Either<Failure, ReviewsAndRatings>> getProductReviewsAndRatings(
       {required productId}) async {
@@ -156,6 +159,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC6: Add New Review - Data Repository Impl
   @override
   Future<Either<Failure, Review>> addOrEditProductReview({
     required String productId,
@@ -174,6 +178,7 @@ class ProductRepositoryImpl extends ProductRepository {
     }
   }
 
+  /// UC7: Edit Review - Data Repository Impl
   @override
   Future<Either<Failure, Review>> getUserProductReview({
     required String productId,

@@ -1,6 +1,7 @@
 import 'package:efashion_flutter/components/productComponent/domain/entities/review.dart';
 import 'package:equatable/equatable.dart';
 
+/// UC5: View All Reviews - Domain Entity
 class ReviewsAndRatings extends Equatable {
   final num average;
   final Map<String, dynamic> rateCount;

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// UC5: View All Reviews - Presentation UI Screen
 @RoutePage()
 class AllReviewsScreen extends StatelessWidget {
 
